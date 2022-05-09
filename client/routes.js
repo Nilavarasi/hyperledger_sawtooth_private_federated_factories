@@ -54,8 +54,9 @@ routes = () => {
                 const username = data['customer_name']
                 keyCheck(username)
                 callSubmitServer(username, data)
-                const deposit_res = db_operations.getUser(data.get['customer_id']).then(data =>{
-                    return data
+                let deposit_res = null;
+                db_operations.getUser(data.get['customer_id']).then(data =>{
+                    deposit_res =  data
                 });
                 var response = [
                     {
@@ -78,8 +79,9 @@ routes = () => {
                 const username = data['customer_name']
                 keyCheck(username)
                 callSubmitServer(username, data)
-                const withdrawRes = db_operations.getUser(data.get['customer_id']).then(data =>{
-                    return data
+                const withdrawRes = null
+                db_operations.getUser(data.get['customer_id']).then(data =>{
+                    withdrawRes = data
                 });
                 var response = [
                     {
@@ -100,8 +102,9 @@ routes = () => {
                 const username = data['customer_name']
                 keyCheck(username)
                 callSubmitServer(username, data)
-                const transferResponse = db_operations.getUser(data.get['customer_id']).then(data =>{
-                    return data
+                const transferResponse = null
+                db_operations.getUser(data.get['customer_id']).then(data =>{
+                    transferResponse =  data;
                 });
                 var response = [
                     {
@@ -122,8 +125,9 @@ routes = () => {
                 const username = data['customer_name']
                 keyCheck(username)
                 callSubmitServer(username, data)
-                const accountBalRes = db_operations.getUser(data.get['customer_id']).then(data =>{
-                    return data
+                const accountBalRes = null;
+                db_operations.getUser(data.get['customer_id']).then(data =>{
+                    accountBalRes =  data;
                 });
                 var response = [
                     {
@@ -145,8 +149,9 @@ routes = () => {
                 const username = data['customer_name']
                 if(keyManager.doesKeyExist(username)){
                     console.log("keys are already created for"+username);
-                    const user_data = db_operations.getUser(data.get['customer_id']).then(data =>{
-                        return data
+                    const user_data = null;
+                    db_operations.getUser(data.get['customer_id']).then(data =>{
+                        user_data = data;
                     });
                     var response = [
                         {
@@ -178,16 +183,18 @@ routes = () => {
                 const username = data['customer_name']
                 var output = keyManager.createkeys(username);
                 keyManager.savekeys(username,output);
+                const customer_id = keyManager.readpublickey(username);
                 const payload = {
                     "verb":"create_account",
-                    "customer_id": keyManager.readpublickey(username),
+                    "customer_id": customer_id,
                     "customer_name":username,
                     "savings_balance":0,
                     "checking_balance":0
                 }
                 callSubmitServer(username, payload)
-                const createUserResponse = db_operations.getUser(data.get['customer_id']).then(data =>{
-                    return data
+                const createUserResponse = null;
+                db_operations.getUser(customer_id).then(data =>{
+                    createUserResponse = data;
                 });
                 var response = [
                     {

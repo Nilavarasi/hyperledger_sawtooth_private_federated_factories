@@ -8,7 +8,7 @@ class DBOperations {
         CREATE TABLE IF NOT EXISTS "customers"(customer_id text primary key not null, customer_name text not null, public_key text not null, bank_name text not null, balance int)`
         this.bank_operations.run(customer_table_sql)
         const transaction_table_sql = `
-        CREATE TABLE transactions (transaction_id text primary key NOT NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text not null, dest_account text not null)`
+        CREATE TABLE IF NOT EXISTS transactions (transaction_id text primary key NOT NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text not null, dest_account text not null)`
         this.bank_operations.run(transaction_table_sql)
     }
 
