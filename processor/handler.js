@@ -7,11 +7,11 @@ const { get_account_address } = require('../shared/Addressing')
 const env = require('../shared/env')
 const BankTransaction = require('./db')
 const  DBOperations = require('./db_operation');
-db_operations.createTables();
 
 const dbFilePath = env['dbFilePath']
 const bank_transactions = new BankTransaction(dbFilePath)
 const db_operations = new DBOperations(bank_transactions)
+db_operations.createTables();
 const encode = obj => Buffer.from(JSON.stringify(obj))
 const decode = buf => JSON.parse(buf);
 
