@@ -102,7 +102,7 @@ routes = () => {
                 const username = data['customer_name']
                 keyCheck(username)
                 callSubmitServer(username, data)
-                const transferResponse = null
+                let transferResponse = null;
                 db_operations.getUser(data.get['customer_id']).then(data =>{
                     transferResponse =  data;
                 });
@@ -125,7 +125,7 @@ routes = () => {
                 const username = data['customer_name']
                 keyCheck(username)
                 callSubmitServer(username, data)
-                const accountBalRes = null;
+                let accountBalRes = null;
                 db_operations.getUser(data.get['customer_id']).then(data =>{
                     accountBalRes =  data;
                 });
@@ -149,7 +149,7 @@ routes = () => {
                 const username = data['customer_name']
                 if(keyManager.doesKeyExist(username)){
                     console.log("keys are already created for"+username);
-                    const user_data = null;
+                    let user_data = null;
                     db_operations.getUser(data.get['customer_id']).then(data =>{
                         user_data = data;
                     });
@@ -192,7 +192,7 @@ routes = () => {
                     "checking_balance":0
                 }
                 callSubmitServer(username, payload)
-                const createUserResponse = null;
+                let createUserResponse = null;
                 db_operations.getUser(customer_id).then(data =>{
                     createUserResponse = data;
                 });
