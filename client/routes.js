@@ -104,43 +104,60 @@ routes = () => {
                 sendResponse(res, response, 200)
             });
         }  else if ((url === '/login') && req.method == 'POST') {
-            if(keyManager.doesKeyExist(username)){
-                console.log("keys are already created for"+username);
+
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const username = data['customer_name']
+                if(keyManager.doesKeyExist(username)){
+                    console.log("keys are already created for"+username);
+                    var response = [
+                        {
+                            "message": "Successfully logged In"
+                        },
+                    ];
+                    res.statusCode = 200;
+                } else {
+                    var response = [
+                        {
+                            "message": "User not found"
+                        },
+                    ];
+                    res.statusCode = 401;
+                }
+                res.setHeader('content-Type', 'Application/json');
+                res.end(JSON.stringify(response))
+            })
+        }  else if (url === '/signup') {
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const username = data['customer_name']
+                var output = keyManager.createkeys(username);
+                keyManager.savekeys(username,output);
+                const payload = {
+                    "verb":"create_account",
+                    "customer_id":username+"001",
+                    "customer_name":username,
+                    "savings_balance":0,
+                    "checking_balance":0
+                }
+                const createUserResponse = callSubmitServer(username, payload)
                 var response = [
                     {
-                        "message": "Successfully logged In"
+                        "message": createUserResponse
                     },
                 ];
                 res.statusCode = 200;
-            } else {
-                var response = [
-                    {
-                        "message": "User not found"
-                    },
-                ];
-                res.statusCode = 401;
-            }
-            res.setHeader('content-Type', 'Application/json');
-            res.end(JSON.stringify(response))
-        }  else if (url === '/signup') {
-            var output = keyManager.createkeys(username);
-            keyManager.savekeys(username,output);
-            const payload = {
-                "verb":"create_account",
-                "customer_id":username+"001",
-                "customer_name":username,
-                "savings_balance":0,
-                "checking_balance":0
-            }
-            const createUserResponse = callSubmitServer(username, payload)
-            var response = [
-                {
-                    "message": createUserResponse
-                },
-            ];
-            res.statusCode = 200;
-            res.setHeader('content-Type', 'Application/json');
-            res.end(JSON.stringify(response))
+                res.setHeader('content-Type', 'Application/json');
+                res.end(JSON.stringify(response))
+            })
         }
     }).listen(3000, function () {
         console.log("server start at port 3000"); //the server object listens on port 3000
