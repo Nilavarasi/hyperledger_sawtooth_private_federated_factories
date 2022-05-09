@@ -3,48 +3,107 @@ const  KeyManager = require('./keymanager');
 const {prepareTransactions} = require('./prepareTransaction')
 const {SubmitToServer} = require('./sumitToServer.js')
 
+var keyManager = new KeyManager();
+
+function keyCheck(username) {
+    if(keyManager.doesKeyExist(username)){
+        console.log("keys are already created for"+username);
+    
+    }else{
+        var output = keyManager.createkeys(username);
+        keyManager.savekeys(username,output);
+    }
+}
+
+function callSubmitServer(username, payload){
+    if(keyManager.doesKeyExist(username)){
+        if(batchlistBytes=prepareTransactions(payload,username)){
+        return SubmitToServer(batchlistBytes);
+        }
+    }
+}
+
+function sendResponse(res, data, statusCode) {
+    res.statusCode = statusCode;
+    res.setHeader('content-Type', 'Application/json');
+    res.end(JSON.stringify(data))
+}
+
 //create a server object:
 routes = () => {
     http.createServer(function (req, res) {
-        var url = req.url;
-        console.log('url', url)
-        if (url === '/deposit') {
-            var response = [
-                {
-                    "message": "Deposited the money"
-                },
-            ];
-            res.statusCode = 200;
-            res.setHeader('content-Type', 'Application/json');
-            res.end(JSON.stringify(response))
-        } else if (url === '/withdraw') {
-            var response = [
-                {
-                    "message": "Withdraw the money"
-                },
-            ];
-            res.statusCode = 200;
-            res.setHeader('content-Type', 'Application/json');
-            res.end(JSON.stringify(response))
-        } else if (url === '/transfer') {
-            var response = [
-                {
-                    "message": "Transfer the money"
-                },
-            ];
-            res.statusCode = 200;
-            res.setHeader('content-Type', 'Application/json');
-            res.end(JSON.stringify(response))
-        } else if (url === '/balance') {
-            var response = [
-                {
-                    "message": "Account Balance"
-                },
-            ];
-            res.statusCode = 200;
-            res.setHeader('content-Type', 'Application/json');
-            res.end(JSON.stringify(response))
-        }  else if (url === '/login') {
+        const url = req.url;
+        let data = []
+        if (url === '/deposit' && req.method == 'POST') {
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const username = data['customer_name']
+                keyCheck(username)
+                const deposit_res = callSubmitServer(username, data)
+                var response = [
+                    {
+                        "message": deposit_res
+                    },
+                ];
+                sendResponse(res, response, 200)
+            });
+            
+        } else if (url === '/withdraw' && req.method == 'POST') {
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const username = data['customer_name']
+                keyCheck(username)
+                const withdrawRes = callSubmitServer(username, data)
+                var response = [
+                    {
+                        "message": withdrawRes
+                    },
+                ];
+                sendResponse(res, response, 200)
+            });
+        } else if (url === '/transfer' && req.method == 'POST') {
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const username = data['customer_name']
+                keyCheck(username)
+                const transferResponse = callSubmitServer(username, data)
+                var response = [
+                    {
+                        "message": transferResponse
+                    },
+                ];
+                sendResponse(res, response, 200)
+            });
+        } else if (url === '/balance' && req.method == 'GET') {
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const username = data['customer_name']
+                keyCheck(username)
+                const accountBalRes = callSubmitServer(username, data)
+                var response = [
+                    {
+                        "message": accountBalRes
+                    },
+                ];
+                sendResponse(res, response, 200)
+            });
+        }  else if ((url === '/login') && req.method == 'POST') {
             if(keyManager.doesKeyExist(username)){
                 console.log("keys are already created for"+username);
                 var response = [
@@ -61,24 +120,22 @@ routes = () => {
                 ];
                 res.statusCode = 401;
             }
-            if(keyManager.doesKeyExist(username)){
-                if(batchlistBytes=prepareTransactions(payload,username)){
-                SubmitToServer(batchlistBytes);
-                }
-            }
             res.setHeader('content-Type', 'Application/json');
             res.end(JSON.stringify(response))
         }  else if (url === '/signup') {
             var output = keyManager.createkeys(username);
             keyManager.savekeys(username,output);
-            if(keyManager.doesKeyExist(username)){
-                if(batchlistBytes=prepareTransactions(payload,username)){
-                SubmitToServer(batchlistBytes);
-                }
+            const payload = {
+                "verb":"create_account",
+                "customer_id":username+"001",
+                "customer_name":username,
+                "savings_balance":0,
+                "checking_balance":0
             }
+            const createUserResponse = callSubmitServer(username, payload)
             var response = [
                 {
-                    "message": "Successfully Created the account"
+                    "message": createUserResponse
                 },
             ];
             res.statusCode = 200;
