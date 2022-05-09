@@ -69,6 +69,14 @@ class SmallBankHandler extends TransactionHandler {
                             [dest_account]: encode(destacount, dest_customer_id)
                         }).then((result) => {
                             console.log("the amount is credited to " + result)
+                            let entry = stateEntries[source_account]
+                            let srcaccount = decode(entry);
+                            entry = stateEntries[dest_account];
+                            let destacount = decode(entry);
+                            return {
+                                "source_account": srcaccount,
+                                "dest_account": destacount
+                            }
                         }).catch((err) => {
                             console.log(err);
                         })
@@ -110,6 +118,9 @@ class SmallBankHandler extends TransactionHandler {
                             [address]: encode(account, customer_id)
                         }).then((result) => {
                             console.log("the amount is debited" + result)
+                            const entry = stateEntries[address]
+                            let account = decode(entry);
+                            return account
                         }).catch((err) => {
                             console.log(err);
                         })
@@ -133,7 +144,6 @@ class SmallBankHandler extends TransactionHandler {
                     throw new InvalidTransaction('Only an account owner can deposit money');
                 } else {
                     console.log("accountbalancebefore" + entry);
-                    console.log("accountbalancebefore" + entry);
                     console.log(account.account.checking_balance);
                     let balance = account.account.checking_balance + amountToDeposit;
                     console.log("accountbalance" + balance);
@@ -144,6 +154,9 @@ class SmallBankHandler extends TransactionHandler {
                         [address]: encode(account, customer_id)
                     }).then((result) => {
                         console.log("the amount is credited")
+                        const entry = stateEntries[address]
+                        let account = decode(entry);
+                        return account
                     }).catch((err) => {
                         console.log(err);
                     })
@@ -154,6 +167,26 @@ class SmallBankHandler extends TransactionHandler {
 
 
 
+    }
+
+    get_balance(customer_id, state) {
+
+        let address = get_account_address(customer_id)
+        if (!address) {
+            throw InvalidTransaction("Failed to load Account: {:?}", err)
+        } else {
+            return state.getState([address]).then((stateEntries) => {
+                const entry = stateEntries[address]
+                let account = decode(entry);
+                if (account.customer_id != customer_id) {
+                    throw new InvalidTransaction('Only an account owner can deposit money');
+                } else {
+                    console.log("accountbalance" + entry);
+                    console.log(account.account.checking_balance);
+                    return account
+                }
+            })
+        }
     }
 
     make_Account_To_JSON(id, name, savings, checking) {
@@ -175,6 +208,7 @@ class SmallBankHandler extends TransactionHandler {
             [address]: encode({ account, customer_id })
         }).then((result) => {
             console.log(result);
+            return address
         }).catch((err) => {
             console.log(err);
         })
@@ -194,6 +228,8 @@ class SmallBankHandler extends TransactionHandler {
             return this.withdraw_money(payload.customer_id, payload.amount, state)
         } else if (payload.verb === 'transfer_money') {
             return this.transfer_money(payload.source_customer_id, payload.dest_customer_id, payload.amount, state)
+        } else if (payload.verb === 'get_balance') {
+            return this.get_balance(payload.customer_id, state)
         } else {
             throw new InvalidTransaction(`Didn't recognize Verb "${verb}".\nMust be one of "create_account,deposit_money,make_deposit,withdraw_money or transfer_money"`)
         }

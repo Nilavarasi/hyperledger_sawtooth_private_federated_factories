@@ -1,12 +1,12 @@
 {
   "name": "processor",
   "version": "1.0.0",
-  "description": "processor for business logic",
+  "description": "processor for Bank business logic",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "santhosh",
+  "author": "Nilavarasi Sivasankaran",
   "license": "ISC",
   "dependencies": {
     "cbor": "^4.1.5",
