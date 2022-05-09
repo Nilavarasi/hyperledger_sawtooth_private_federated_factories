@@ -116,7 +116,12 @@ routes = () => {
                     console.log("keys are already created for"+username);
                     var response = [
                         {
-                            "message": "Successfully logged In"
+                            "message": "Successfully logged In",
+			    "user": {
+			    	"user_id": keyManager.readpublickey(username),
+				"account_balance": 90,
+				"username": username
+			    }
                         },
                     ];
                     res.statusCode = 200;
@@ -143,7 +148,7 @@ routes = () => {
                 keyManager.savekeys(username,output);
                 const payload = {
                     "verb":"create_account",
-                    "customer_id":username+"001",
+                    "customer_id": keyManager.readpublickey(username),
                     "customer_name":username,
                     "savings_balance":0,
                     "checking_balance":0
@@ -151,7 +156,12 @@ routes = () => {
                 const createUserResponse = callSubmitServer(username, payload)
                 var response = [
                     {
-                        "message": createUserResponse
+                        "message": "successfully registered user",
+			"user": {
+                                "user_id": keyManager.readpublickey(username),
+                                "account_balance": 0,
+                                "username": username
+                            }
                     },
                 ];
                 res.statusCode = 200;
