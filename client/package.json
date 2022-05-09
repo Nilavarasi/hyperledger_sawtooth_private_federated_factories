@@ -9,9 +9,11 @@
   "author": "Nilavarasi Sivasankaran",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "cbor": "^4.1.5",
     "crypto": "^1.0.1",
     "request": "^2.88.0",
-    "sawtooth-sdk": "^1.0.5"
+    "sawtooth-sdk": "^1.0.5",
+    "sqlite3": "^5.0.8"
   }
 }

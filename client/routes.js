@@ -2,9 +2,18 @@ var http = require('http');
 const  KeyManager = require('./keymanager');
 const {prepareTransactions} = require('./prepareTransaction')
 const {SubmitToServer} = require('./sumitToServer.js')
+const env = require('../shared/env')
+const BankTransaction = require('./db')
+const  DBOperations = require('./db_operation');
+
+
+const dbFilePath = env['dbFilePath']
+const bank_transactions = new BankTransaction(dbFilePath)
+const db_operations = new DBOperations(bank_transactions)
+
 
 var keyManager = new KeyManager();
-
+db_operations.createTables();
 function keyCheck(username) {
     if(keyManager.doesKeyExist(username)){
         console.log("keys are already created for"+username);
@@ -34,6 +43,7 @@ routes = () => {
     http.createServer(function (req, res) {
         const url = req.url;
         let data = []
+
         if (url === '/deposit' && req.method == 'POST') {
             req.on('data', (chunk) => {
                 data.push(chunk)
@@ -43,7 +53,10 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                const deposit_res = callSubmitServer(username, data)
+                callSubmitServer(username, data)
+                const deposit_res = db_operations.getUser(data.get['customer_id']).then(data =>{
+                    return data
+                });
                 var response = [
                     {
                         "message": deposit_res
@@ -52,7 +65,10 @@ routes = () => {
                 sendResponse(res, response, 200)
             });
             
-        } else if (url === '/withdraw' && req.method == 'POST') {
+        }
+        
+        
+        else if (url === '/withdraw' && req.method == 'POST') {
             req.on('data', (chunk) => {
                 data.push(chunk)
             })
@@ -61,7 +77,10 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                const withdrawRes = callSubmitServer(username, data)
+                callSubmitServer(username, data)
+                const withdrawRes = db_operations.getUser(data.get['customer_id']).then(data =>{
+                    return data
+                });
                 var response = [
                     {
                         "message": withdrawRes
@@ -69,7 +88,9 @@ routes = () => {
                 ];
                 sendResponse(res, response, 200)
             });
-        } else if (url === '/transfer' && req.method == 'POST') {
+        }
+        
+        else if (url === '/transfer' && req.method == 'POST') {
             req.on('data', (chunk) => {
                 data.push(chunk)
             })
@@ -78,7 +99,10 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                const transferResponse = callSubmitServer(username, data)
+                callSubmitServer(username, data)
+                const transferResponse = db_operations.getUser(data.get['customer_id']).then(data =>{
+                    return data
+                });
                 var response = [
                     {
                         "message": transferResponse
@@ -86,7 +110,9 @@ routes = () => {
                 ];
                 sendResponse(res, response, 200)
             });
-        } else if (url === '/balance' && req.method == 'GET') {
+        }
+        
+        else if (url === '/balance' && req.method == 'GET') {
             req.on('data', (chunk) => {
                 data.push(chunk)
             })
@@ -95,7 +121,10 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                const accountBalRes = callSubmitServer(username, data)
+                callSubmitServer(username, data)
+                const accountBalRes = db_operations.getUser(data.get['customer_id']).then(data =>{
+                    return data
+                });
                 var response = [
                     {
                         "message": accountBalRes
@@ -103,7 +132,9 @@ routes = () => {
                 ];
                 sendResponse(res, response, 200)
             });
-        }  else if ((url === '/login') && req.method == 'POST') {
+        }
+        
+        else if ((url === '/login') && req.method == 'POST') {
 
             req.on('data', (chunk) => {
                 data.push(chunk)
@@ -114,14 +145,13 @@ routes = () => {
                 const username = data['customer_name']
                 if(keyManager.doesKeyExist(username)){
                     console.log("keys are already created for"+username);
+                    const user_data = db_operations.getUser(data.get['customer_id']).then(data =>{
+                        return data
+                    });
                     var response = [
                         {
                             "message": "Successfully logged In",
-			    "user": {
-			    	"user_id": keyManager.readpublickey(username),
-				"account_balance": 90,
-				"username": username
-			    }
+			                "user": user_data
                         },
                     ];
                     res.statusCode = 200;
@@ -136,7 +166,9 @@ routes = () => {
                 res.setHeader('content-Type', 'Application/json');
                 res.end(JSON.stringify(response))
             })
-        }  else if (url === '/signup') {
+        }
+        
+        else if (url === '/signup') {
             req.on('data', (chunk) => {
                 data.push(chunk)
             })
@@ -153,15 +185,14 @@ routes = () => {
                     "savings_balance":0,
                     "checking_balance":0
                 }
-                const createUserResponse = callSubmitServer(username, payload)
+                callSubmitServer(username, payload)
+                const createUserResponse = db_operations.getUser(data.get['customer_id']).then(data =>{
+                    return data
+                });
                 var response = [
                     {
                         "message": "successfully registered user",
-			"user": {
-                                "user_id": keyManager.readpublickey(username),
-                                "account_balance": 0,
-                                "username": username
-                            }
+                        "user": {"user_id": createUserResponse}
                     },
                 ];
                 res.statusCode = 200;

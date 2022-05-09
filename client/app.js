@@ -25,6 +25,6 @@ routes()
         }
     }
 }
-else 
-console.log("Payload is empty. Run with payload")
+// else 
+// console.log("Payload is empty. Run with payload")
 

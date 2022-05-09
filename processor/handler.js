@@ -4,7 +4,14 @@ const cbor = require('cbor')
 const env = require('../shared/env');
 // const SimpleStoreState = require('./state');
 const { get_account_address } = require('../shared/Addressing')
+const env = require('../shared/env')
+const BankTransaction = require('./db')
+const  DBOperations = require('./db_operation');
+db_operations.createTables();
 
+const dbFilePath = env['dbFilePath']
+const bank_transactions = new BankTransaction(dbFilePath)
+const db_operations = new DBOperations(bank_transactions)
 const encode = obj => Buffer.from(JSON.stringify(obj))
 const decode = buf => JSON.parse(buf);
 
@@ -28,9 +35,16 @@ class SmallBankHandler extends TransactionHandler {
         }
     }
 
-    create_account(state, id, name, savings, checking) {
+    create_account(state, id, name, savings, checking, public_key, bank_name) {
         let new_account_data = this.make_Account_To_JSON(id, name, savings, checking)
-
+        const insert_data = {
+            "customer_id": id,
+            "customer_name": name,
+            "balance": savings,
+            "public_key": public_key,
+            "bank_name": bank_name
+        }
+        db_operations.insertCustomer(insert_data)
         return this.save_account(state, new_account_data, id)
 
     }
@@ -68,6 +82,14 @@ class SmallBankHandler extends TransactionHandler {
                         return state.setState({
                             [dest_account]: encode(destacount, dest_customer_id)
                         }).then((result) => {
+                            const insert_data = {
+                                "customer_id": srcaccount.account,
+                                "dest_account": destacount.account,
+                                "transaction_name": "transfer",
+                                "amount": amountToTransfer,
+                                "transaction_hash": 'ndjabja'
+                            }
+                            db_operations.insertTranasaction(insert_data)
                             console.log("the amount is credited to " + result)
                             let entry = stateEntries[source_account]
                             let srcaccount = decode(entry);
@@ -118,6 +140,14 @@ class SmallBankHandler extends TransactionHandler {
                             [address]: encode(account, customer_id)
                         }).then((result) => {
                             console.log("the amount is debited" + result)
+                            const insert_data = {
+                                "customer_id": account.customer_id,
+                                "dest_account": null,
+                                "transaction_name": "withdraw",
+                                "amount": amountToWithDraw,
+                                "transaction_hash": 'ndjabja'
+                            }
+                            db_operations.insertTranasaction(insert_data)
                             const entry = stateEntries[address]
                             let account = decode(entry);
                             return account
@@ -154,6 +184,14 @@ class SmallBankHandler extends TransactionHandler {
                         [address]: encode(account, customer_id)
                     }).then((result) => {
                         console.log("the amount is credited")
+                        const insert_data = {
+                            "customer_id": account.customer_id,
+                            "dest_account": null,
+                            "transaction_name": "deposit",
+                            "amount": amountToDeposit,
+                            "transaction_hash": 'ndjabja'
+                        }
+                        db_operations.insertTranasaction(insert_data)
                         const entry = stateEntries[address]
                         let account = decode(entry);
                         return account
@@ -163,10 +201,6 @@ class SmallBankHandler extends TransactionHandler {
                 }
             })
         }
-
-
-
-
     }
 
     get_balance(customer_id, state) {
@@ -221,7 +255,7 @@ class SmallBankHandler extends TransactionHandler {
         let payload = cbor.decode(transactionProcessRequest.payload);
         console.log(payload);
         if (payload.verb === 'create_account') {
-            this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance)
+            this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance, this.signer_public_key, payload.bank_name)
             .then(create_account_resp => {
                 console.log("create_account_resp", create_account_resp)
                     return create_account_resp
