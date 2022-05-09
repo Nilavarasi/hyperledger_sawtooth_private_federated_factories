@@ -22,7 +22,6 @@ function prepareTransactions(payload,username) {
   }).finish()
    
   
-  
   const signature = keyManager.sign(transactionHeaderBytes,username);
 
   const transaction = protobuf.Transaction.create({
