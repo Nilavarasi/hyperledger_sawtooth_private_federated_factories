@@ -55,7 +55,7 @@ routes = () => {
                 keyCheck(username)
                 callSubmitServer(username, data)
                 let deposit_res = null;
-                db_operations.getUser(data.get['customer_id']).then(data =>{
+                db_operations.getUser(data['customer_id']).then(data =>{
                     deposit_res =  data
                 });
                 var response = [
@@ -80,7 +80,7 @@ routes = () => {
                 keyCheck(username)
                 callSubmitServer(username, data)
                 const withdrawRes = null
-                db_operations.getUser(data.get['customer_id']).then(data =>{
+                db_operations.getUser(data['customer_id']).then(data =>{
                     withdrawRes = data
                 });
                 var response = [
@@ -103,7 +103,7 @@ routes = () => {
                 keyCheck(username)
                 callSubmitServer(username, data)
                 let transferResponse = null;
-                db_operations.getUser(data.get['customer_id']).then(data =>{
+                db_operations.getUser(data['customer_id']).then(data =>{
                     transferResponse =  data;
                 });
                 var response = [
@@ -126,7 +126,7 @@ routes = () => {
                 keyCheck(username)
                 callSubmitServer(username, data)
                 let accountBalRes = null;
-                db_operations.getUser(data.get['customer_id']).then(data =>{
+                db_operations.getUser(data['customer_id']).then(data =>{
                     accountBalRes =  data;
                 });
                 var response = [
@@ -150,7 +150,7 @@ routes = () => {
                 if(keyManager.doesKeyExist(username)){
                     console.log("keys are already created for"+username);
                     let user_data = null;
-                    db_operations.getUser(data.get['customer_id']).then(data =>{
+                    db_operations.getUser(data['customer_id']).then(data =>{
                         user_data = data;
                     });
                     var response = [
