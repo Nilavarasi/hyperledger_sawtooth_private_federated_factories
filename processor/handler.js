@@ -4,7 +4,6 @@ const cbor = require('cbor')
 const env = require('../shared/env');
 // const SimpleStoreState = require('./state');
 const { get_account_address } = require('../shared/Addressing')
-const env = require('../shared/env')
 const BankTransaction = require('./db')
 const  DBOperations = require('./db_operation');
 
