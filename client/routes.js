@@ -67,20 +67,22 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                const transcation_hash = callSubmitServer(username, data);
-                const customer_id = data['customer_id']
-                updateTransHash(customer_id, transcation_hash)
-                let deposit_res = null;
-                db_operations.getUser(customer_id).then(data =>{
-                    deposit_res =  data
-                    var response = [
-                        {
-                            "message": deposit_res
-                        },
-                    ];
-                    sendResponse(res, response, 200)
-                });
-                
+                let transcation_hash = null;
+                callSubmitServer(username, data).then(callSubRes => {
+                    transcation_hash = callSubRes;
+                    const customer_id = data['customer_id']
+                    updateTransHash(customer_id, transcation_hash)
+                    let deposit_res = null;
+                    db_operations.getUser(customer_id).then(data =>{
+                        deposit_res =  data
+                        var response = [
+                            {
+                                "message": deposit_res
+                            },
+                        ];
+                        sendResponse(res, response, 200)
+                    });
+                })
             });
             
         }
@@ -95,19 +97,24 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                transcation_hash = callSubmitServer(username, data)
-                const customer_id = data['customer_id']
-                updateTransHash(customer_id, transcation_hash)
-                const withdrawRes = null
-                db_operations.getUser(customer_id).then(data =>{
-                    withdrawRes = data;
-                    var response = [
-                        {
-                            "message": withdrawRes
-                        },
-                    ];
-                    sendResponse(res, response, 200)
-                });
+                let transcation_hash = null;
+                callSubmitServer(username, data)
+                .then(subRes=> {
+                    transcation_hash = subRes;
+                    const customer_id = data['customer_id']
+                    updateTransHash(customer_id, transcation_hash)
+                    const withdrawRes = null
+                    db_operations.getUser(customer_id).then(data =>{
+                        withdrawRes = data;
+                        var response = [
+                            {
+                                "message": withdrawRes
+                            },
+                        ];
+                        sendResponse(res, response, 200)
+                    });
+                })
+                
             });
         }
         
@@ -120,19 +127,24 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                transcation_hash = callSubmitServer(username, data)
-                const customer_id = data['customer_id']
-                updateTransHash(customer_id, transcation_hash)
-                let transferResponse = null;
-                db_operations.getUser(customer_id).then(data =>{
-                    transferResponse =  data;
-                    var response = [
-                        {
-                            "message": transferResponse
-                        },
-                    ];
-                    sendResponse(res, response, 200)
-                });
+                let transcation_hash = null
+                callSubmitServer(username, data)
+                .then(calRes => {
+                    transcation_hash = calRes;
+                    const customer_id = data['customer_id']
+                    updateTransHash(customer_id, transcation_hash)
+                    let transferResponse = null;
+                    db_operations.getUser(customer_id).then(data =>{
+                        transferResponse =  data;
+                        var response = [
+                            {
+                                "message": transferResponse
+                            },
+                        ];
+                        sendResponse(res, response, 200)
+                    });
+                })
+                
             });
         }
         
@@ -145,17 +157,19 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                callSubmitServer(username, data)
-                let accountBalRes = null;
-                db_operations.getUser(data['customer_id']).then(data =>{
-                    accountBalRes =  data;
-                    var response = [
-                        {
-                            "message": accountBalRes
-                        },
-                    ];
-                    sendResponse(res, response, 200)
-                });
+                callSubmitServer(username, data).then(calRes => {
+                    let accountBalRes = null;
+                    db_operations.getUser(data['customer_id']).then(data =>{
+                        accountBalRes =  data;
+                        var response = [
+                            {
+                                "message": accountBalRes
+                            },
+                        ];
+                        sendResponse(res, response, 200)
+                    });
+                })
+              
             });
         }
         
@@ -214,20 +228,26 @@ routes = () => {
                     "bank_name": data['bank_name']
                 }
                 callSubmitServer(username, payload)
-                let createUserResponse = null;
-                db_operations.getUser(customer_id).then(data =>{
-                    createUserResponse = data;
-                    var response = [
-                        {
-                            "message": "successfully registered user",
-                            "user": createUserResponse
-                        },
-                    ];
-                    res.statusCode = 200;
-                    res.setHeader('content-Type', 'Application/json');
-                    res.end(JSON.stringify(response))
-                });
+                .then(calRes => {
+                    let createUserResponse = null;
+                    db_operations.getUser(customer_id).then(data =>{
+                        createUserResponse = data;
+                        var response = [
+                            {
+                                "message": "successfully registered user",
+                                "user": createUserResponse
+                            },
+                        ];
+                        res.statusCode = 200;
+                        res.setHeader('content-Type', 'Application/json');
+                        res.end(JSON.stringify(response))
+                    });  
+                })
             })
+        } else {
+            res.statusCode = 402;
+            res.setHeader('content-Type', 'Application/json');
+            res.end("Unknown request")
         }
     }).listen(3000, function () {
         console.log("server start at port 3000"); //the server object listens on port 3000
