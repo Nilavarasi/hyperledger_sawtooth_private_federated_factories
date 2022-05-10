@@ -73,13 +73,14 @@ routes = () => {
                 let deposit_res = null;
                 db_operations.getUser(customer_id).then(data =>{
                     deposit_res =  data
+                    var response = [
+                        {
+                            "message": deposit_res
+                        },
+                    ];
+                    sendResponse(res, response, 200)
                 });
-                var response = [
-                    {
-                        "message": deposit_res
-                    },
-                ];
-                sendResponse(res, response, 200)
+                
             });
             
         }
@@ -99,14 +100,14 @@ routes = () => {
                 updateTransHash(customer_id, transcation_hash)
                 const withdrawRes = null
                 db_operations.getUser(customer_id).then(data =>{
-                    withdrawRes = data
+                    withdrawRes = data;
+                    var response = [
+                        {
+                            "message": withdrawRes
+                        },
+                    ];
+                    sendResponse(res, response, 200)
                 });
-                var response = [
-                    {
-                        "message": withdrawRes
-                    },
-                ];
-                sendResponse(res, response, 200)
             });
         }
         
@@ -125,13 +126,13 @@ routes = () => {
                 let transferResponse = null;
                 db_operations.getUser(customer_id).then(data =>{
                     transferResponse =  data;
+                    var response = [
+                        {
+                            "message": transferResponse
+                        },
+                    ];
+                    sendResponse(res, response, 200)
                 });
-                var response = [
-                    {
-                        "message": transferResponse
-                    },
-                ];
-                sendResponse(res, response, 200)
             });
         }
         
@@ -148,13 +149,13 @@ routes = () => {
                 let accountBalRes = null;
                 db_operations.getUser(data['customer_id']).then(data =>{
                     accountBalRes =  data;
+                    var response = [
+                        {
+                            "message": accountBalRes
+                        },
+                    ];
+                    sendResponse(res, response, 200)
                 });
-                var response = [
-                    {
-                        "message": accountBalRes
-                    },
-                ];
-                sendResponse(res, response, 200)
             });
         }
         
@@ -172,14 +173,14 @@ routes = () => {
                     let user_data = null;
                     db_operations.getUser(data['customer_id']).then(data =>{
                         user_data = data;
+                        var response = [
+                            {
+                                "message": "Successfully logged In",
+                                "user": user_data
+                            },
+                        ];
+                        res.statusCode = 200;
                     });
-                    var response = [
-                        {
-                            "message": "Successfully logged In",
-			                "user": user_data
-                        },
-                    ];
-                    res.statusCode = 200;
                 } else {
                     var response = [
                         {
@@ -216,16 +217,16 @@ routes = () => {
                 let createUserResponse = null;
                 db_operations.getUser(customer_id).then(data =>{
                     createUserResponse = data;
+                    var response = [
+                        {
+                            "message": "successfully registered user",
+                            "user": createUserResponse
+                        },
+                    ];
+                    res.statusCode = 200;
+                    res.setHeader('content-Type', 'Application/json');
+                    res.end(JSON.stringify(response))
                 });
-                var response = [
-                    {
-                        "message": "successfully registered user",
-                        "user": {"user_id": createUserResponse}
-                    },
-                ];
-                res.statusCode = 200;
-                res.setHeader('content-Type', 'Application/json');
-                res.end(JSON.stringify(response))
             })
         }
     }).listen(3000, function () {
