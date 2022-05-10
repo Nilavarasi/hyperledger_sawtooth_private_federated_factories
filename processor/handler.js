@@ -19,6 +19,7 @@ class SmallBankHandler extends TransactionHandler {
     constructor() {
         super(env.familyName, [env.familyVersion], [env.TP_NAMESPACE])
         this.signer_public_keys = "";
+        this.transaction_done = false
     }
 
     get_account(customer_id, state) {
@@ -101,10 +102,10 @@ class SmallBankHandler extends TransactionHandler {
                                     "amount": amountToTransfer,
                                     "transaction_hash": 'transaction_hash'
                                 }
-                                db_operations.getTransactionById(last_transaction_id + 1).then(data => {
-                                    if (data.length == 0) {
+                                    if (!this.transaction_done) {
                                         db_operations.insertTranasaction(insert_data)
                                             .then(data => {
+                                                this.transaction_done = true
                                                 db_operations.updateUserBalance({ 'customer_id': srcaccount.account, 'amount': srcbalance1 })
                                                     .then(res1 => {
                                                         db_operations.updateUserBalance({ 'customer_id': destacount.account, 'amount': dstbalance })
@@ -122,7 +123,6 @@ class SmallBankHandler extends TransactionHandler {
                                                     })
                                             })
                                     }
-                                })
 
                             }).catch((err) => {
                                 console.log(err);
@@ -179,17 +179,16 @@ class SmallBankHandler extends TransactionHandler {
                                 "amount": amountToWithDraw,
                                 "transaction_hash": 'ndjabja'
                             }
-                            db_operations.getTransactionById(last_transaction_id + 1).then(data => {
-                                if (data.length == 0) {
+                                if (!this.transaction_done) {
                                     db_operations.insertTranasaction(insert_data)
                                         .then(data => {
+                                            this.transaction_done = true;
                                             db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': newBalance })
                                         })
                                     const entry = stateEntries[address]
                                     let account = decode(entry);
                                     return account
                                 }
-                            })
                         }).catch((err) => {
                             console.log(err);
                         })
@@ -235,19 +234,18 @@ class SmallBankHandler extends TransactionHandler {
                             "dest_account": null,
                             "transaction_name": "deposit",
                             "amount": amountToDeposit,
-                            "transaction_hash": 'ndjabja'
+                            "transaction_hash": ''
                         }
-                        db_operations.getTransactionById(last_transaction_id + 1).then(data => {
-                            if (data.length == 0) {
+                            if (!this.transaction_done) {
                                 db_operations.insertTranasaction(insert_data)
                                     .then(data => {
+                                        this.transaction_done = true;
                                         db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': balance })
                                     })
                                 const entry = stateEntries[address]
                                 let account = decode(entry);
                                 return account
                             }
-                        })
 
                     }).catch((err) => {
                         console.log(err);
