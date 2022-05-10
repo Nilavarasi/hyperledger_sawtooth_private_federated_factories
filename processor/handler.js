@@ -43,7 +43,13 @@ class SmallBankHandler extends TransactionHandler {
             "public_key": public_key,
             "bank_name": bank_name
         }
-        db_operations.insertCustomer(insert_data)
+        db_operations.getUser(id).then(data => {
+            if (data.length ==  0) {
+                db_operations.insertCustomer(insert_data).then(data=>{
+                    console.log("inserted customer db id", data);
+                })
+            }
+        })
         return this.save_account(state, new_account_data, id)
 
     }
@@ -81,23 +87,39 @@ class SmallBankHandler extends TransactionHandler {
                         return state.setState({
                             [dest_account]: encode(destacount, dest_customer_id)
                         }).then((result) => {
+                            const last_transaction = db_operations.getUserLastTransaction(customer_id)
+                            console.log("last_transaction", last_transaction)
+                            let last_transaction_id = 0
+                            if(last_transaction.length > 0) {
+                                last_transaction_id = last_transaction[0]['transaction_id']
+                            }
                             const insert_data = {
+                                "transaction_id": last_transaction_id + 1,
                                 "customer_id": srcaccount.account,
                                 "dest_account": destacount.account,
                                 "transaction_name": "transfer",
                                 "amount": amountToTransfer,
-                                "transaction_hash": 'ndjabja'
+                                "transaction_hash": 'transaction_hash'
                             }
                             db_operations.insertTranasaction(insert_data)
-                            console.log("the amount is credited to " + result)
-                            let entry = stateEntries[source_account]
-                            let srcaccount = decode(entry);
-                            entry = stateEntries[dest_account];
-                            let destacount = decode(entry);
-                            return {
-                                "source_account": srcaccount,
-                                "dest_account": destacount
-                            }
+                            .then(data => {
+                                db_operations.updateUserBalance({'customer_id': srcaccount.account, 'amount': srcbalance1})
+                                .then(res1 => {
+                                    db_operations.updateUserBalance({'customer_id': destacount.account, 'amount': dstbalance})
+                                    .then(data=> {
+                                        console.log("the amount is credited to " + result)
+                                        let entry = stateEntries[source_account]
+                                        let srcaccount = decode(entry);
+                                        entry = stateEntries[dest_account];
+                                        let destacount = decode(entry);
+                                        return {
+                                            "source_account": srcaccount,
+                                            "dest_account": destacount
+                                        }
+                                    })
+                                })
+                            })
+                            
                         }).catch((err) => {
                             console.log(err);
                         })
@@ -139,7 +161,14 @@ class SmallBankHandler extends TransactionHandler {
                             [address]: encode(account, customer_id)
                         }).then((result) => {
                             console.log("the amount is debited" + result)
+                            const last_transaction = db_operations.getUserLastTransaction(customer_id)
+                            console.log("last_transaction", last_transaction)
+                            let last_transaction_id = 0
+                            if(last_transaction.length > 0) {
+                                last_transaction_id = last_transaction[0]['transaction_id']
+                            }
                             const insert_data = {
+                                "transaction_id": last_transaction_id+1,
                                 "customer_id": account.customer_id,
                                 "dest_account": null,
                                 "transaction_name": "withdraw",
@@ -147,6 +176,9 @@ class SmallBankHandler extends TransactionHandler {
                                 "transaction_hash": 'ndjabja'
                             }
                             db_operations.insertTranasaction(insert_data)
+                            .then(data => {
+                                db_operations.updateUserBalance({'customer_id': customer_id, 'amount': newBalance})
+                            })
                             const entry = stateEntries[address]
                             let account = decode(entry);
                             return account
@@ -183,7 +215,14 @@ class SmallBankHandler extends TransactionHandler {
                         [address]: encode(account, customer_id)
                     }).then((result) => {
                         console.log("the amount is credited")
+                        const last_transaction = db_operations.getUserLastTransaction(customer_id)
+                        console.log("last_transaction", last_transaction)
+                        let last_transaction_id = 0
+                        if(last_transaction.length > 0) {
+                            last_transaction_id = last_transaction[0]['transaction_id']
+                        }
                         const insert_data = {
+                            "transaction_id": last_transaction_id +1,
                             "customer_id": account.customer_id,
                             "dest_account": null,
                             "transaction_name": "deposit",
@@ -191,6 +230,9 @@ class SmallBankHandler extends TransactionHandler {
                             "transaction_hash": 'ndjabja'
                         }
                         db_operations.insertTranasaction(insert_data)
+                        .then(data => {
+                            db_operations.updateUserBalance({'customer_id': customer_id, 'amount': balance})
+                        })
                         const entry = stateEntries[address]
                         let account = decode(entry);
                         return account

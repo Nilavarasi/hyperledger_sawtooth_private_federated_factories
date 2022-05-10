@@ -75,6 +75,29 @@ class DBOperations {
             })
     }
 
+
+    getUserLastTransaction(customer_id) {
+        this.bank_operations.all(
+            `SELECT * FROM transactions WHERE customer_id = ? order by transaction_id desc limit 1`,
+            [customer_id]).then(data => {
+                console.log("dabajdh", data)
+                return data['id']
+            })
+    }
+
+    updateTransactionHash(data) {
+        const customer_id = data['customer_id'];
+        const transaction_id = data['transaction_id'];
+        const transaction_hash = data['transaction_hash'];
+        if (customer_id && transaction_hash && transaction_id) {
+            const update_trans_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_id = ?`;
+            return this.bank_operations.run(
+                update_trans_query, [transaction_hash, customer_id, transaction_id]
+            );
+        } else {
+            return "Column missing"
+        }
+    }
 }
 
 module.exports = DBOperations;

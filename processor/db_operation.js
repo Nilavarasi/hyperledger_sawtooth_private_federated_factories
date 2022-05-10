@@ -73,6 +73,14 @@ class DBOperations {
             })
     }
 
+    getUserLastTransaction(customer_id) {
+        this.bank_operations.all(
+            `SELECT transaction_id FROM transactions WHERE customer_id = ? order by transaction_id desc limit 1`,
+            [customer_id]).then(data => {
+                return data
+            })
+    }
+
 }
 
 module.exports = DBOperations;

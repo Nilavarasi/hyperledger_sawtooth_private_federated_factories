@@ -38,6 +38,20 @@ function sendResponse(res, data, statusCode) {
     res.end(JSON.stringify(data))
 }
 
+function updateTransHash(customer_id, transcation_hash) {
+    const last_transaction = db_operations.getUserLastTransaction(customer_id)
+    console.log("last_transaction", last_transaction)
+    let last_transaction_id = 0
+    if(last_transaction.length > 0) {
+        last_transaction_id = last_transaction[0]['transaction_id']
+    }
+    const transact_data = {
+        "customer_id": customer_id,
+        "transaction_hash": transcation_hash,
+        "transaction_id": last_transaction_id + 1
+    }
+    db_operations.updateTransactionHash(transact_data)
+}
 //create a server object:
 routes = () => {
     http.createServer(function (req, res) {
@@ -53,9 +67,11 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                callSubmitServer(username, data)
+                const transcation_hash = callSubmitServer(username, data);
+                const customer_id = data['customer_id']
+                updateTransHash(customer_id, transcation_hash)
                 let deposit_res = null;
-                db_operations.getUser(data['customer_id']).then(data =>{
+                db_operations.getUser(customer_id).then(data =>{
                     deposit_res =  data
                 });
                 var response = [
@@ -78,9 +94,11 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                callSubmitServer(username, data)
+                transcation_hash = callSubmitServer(username, data)
+                const customer_id = data['customer_id']
+                updateTransHash(customer_id, transcation_hash)
                 const withdrawRes = null
-                db_operations.getUser(data['customer_id']).then(data =>{
+                db_operations.getUser(customer_id).then(data =>{
                     withdrawRes = data
                 });
                 var response = [
@@ -101,9 +119,11 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 keyCheck(username)
-                callSubmitServer(username, data)
+                transcation_hash = callSubmitServer(username, data)
+                const customer_id = data['customer_id']
+                updateTransHash(customer_id, transcation_hash)
                 let transferResponse = null;
-                db_operations.getUser(data['customer_id']).then(data =>{
+                db_operations.getUser(customer_id).then(data =>{
                     transferResponse =  data;
                 });
                 var response = [
@@ -189,7 +209,8 @@ routes = () => {
                     "customer_id": customer_id,
                     "customer_name":username,
                     "savings_balance":0,
-                    "checking_balance":0
+                    "checking_balance":0,
+                    "bank_name": data['bank_name']
                 }
                 callSubmitServer(username, payload)
                 let createUserResponse = null;
