@@ -5,7 +5,7 @@ const env = require('../shared/env');
 // const SimpleStoreState = require('./state');
 const { get_account_address } = require('../shared/Addressing')
 const BankTransaction = require('./db')
-const  DBOperations = require('./db_operation');
+const DBOperations = require('./db_operation');
 
 const dbFilePath = env['dbFilePath']
 const bank_transactions = new BankTransaction(dbFilePath)
@@ -44,8 +44,8 @@ class SmallBankHandler extends TransactionHandler {
             "bank_name": bank_name
         }
         db_operations.getUser(id).then(data => {
-            if (data.length ==  0) {
-                db_operations.insertCustomer(insert_data).then(data=>{
+            if (data.length == 0) {
+                db_operations.insertCustomer(insert_data).then(data => {
                     console.log("inserted customer db id", data);
                 })
             }
@@ -54,83 +54,87 @@ class SmallBankHandler extends TransactionHandler {
 
     }
 
-    transfer_money(source_customer_id, dest_customer_id, amountToTransfer,state) {
-        let source_account  = get_account_address(source_customer_id);
+    transfer_money(source_customer_id, dest_customer_id, amountToTransfer, state) {
+        let source_account = get_account_address(source_customer_id);
         let dest_account = get_account_address(dest_customer_id);
         if (!source_account && !dest_account)
             throw new InvalidTransaction("Both source and dest accounts must exist")
-         else {
-             return state.getState([source_account]).then((stateEntries) => {
+        else {
+            return state.getState([source_account]).then((stateEntries) => {
                 const entry = stateEntries[source_account]
                 let srcaccount = decode(entry);
-                if (srcaccount.customer_id != source_customer_id){
+                if (srcaccount.customer_id != source_customer_id) {
                     throw new InvalidTransaction('Only an account owner should transfer money');
                 }
                 var srcbalance = srcaccount.account.checking_balance;
                 if (srcbalance < amountToTransfer) {
                     throw new InvalidTransaction(`Insufficient funds in source checking account ${srcbalance}`)
-                }else{
-                return state.getState([dest_account]).then((stateEntries) => {
-                    const entry = stateEntries[dest_account];
-                    let destacount = decode(entry);
-                    let srcbalance1 = srcbalance - amountToTransfer;
-                    srcaccount.account.checking_balance =srcbalance1;
-                    let dstbalance=destacount.account.checking_balance;
-                    dstbalance= dstbalance + amountToTransfer;
-                    destacount.account.checking_balance = dstbalance;
-                    console.log(destacount.account);
-                    console.log(srcaccount.account);
-                    return state.setState({
-                        [source_account]: encode(srcaccount, source_customer_id)
-                    }).then((result) => {
-                        console.log("amount is debited from"+result)
+                } else {
+                    return state.getState([dest_account]).then((stateEntries) => {
+                        const entry = stateEntries[dest_account];
+                        let destacount = decode(entry);
+                        let srcbalance1 = srcbalance - amountToTransfer;
+                        srcaccount.account.checking_balance = srcbalance1;
+                        let dstbalance = destacount.account.checking_balance;
+                        dstbalance = dstbalance + amountToTransfer;
+                        destacount.account.checking_balance = dstbalance;
+                        console.log(destacount.account);
+                        console.log(srcaccount.account);
                         return state.setState({
-                            [dest_account]: encode(destacount, dest_customer_id)
+                            [source_account]: encode(srcaccount, source_customer_id)
                         }).then((result) => {
-                            const last_transaction = db_operations.getUserLastTransaction(customer_id)
-                            console.log("last_transaction", last_transaction)
-                            let last_transaction_id = 0
-                            if(last_transaction.length > 0) {
-                                last_transaction_id = last_transaction[0]['transaction_id']
-                            }
-                            const insert_data = {
-                                "transaction_id": last_transaction_id + 1,
-                                "customer_id": srcaccount.account,
-                                "dest_account": destacount.account,
-                                "transaction_name": "transfer",
-                                "amount": amountToTransfer,
-                                "transaction_hash": 'transaction_hash'
-                            }
-                            db_operations.insertTranasaction(insert_data)
-                            .then(data => {
-                                db_operations.updateUserBalance({'customer_id': srcaccount.account, 'amount': srcbalance1})
-                                .then(res1 => {
-                                    db_operations.updateUserBalance({'customer_id': destacount.account, 'amount': dstbalance})
-                                    .then(data=> {
-                                        console.log("the amount is credited to " + result)
-                                        let entry = stateEntries[source_account]
-                                        let srcaccount = decode(entry);
-                                        entry = stateEntries[dest_account];
-                                        let destacount = decode(entry);
-                                        return {
-                                            "source_account": srcaccount,
-                                            "dest_account": destacount
-                                        }
-                                    })
+                            console.log("amount is debited from" + result)
+                            return state.setState({
+                                [dest_account]: encode(destacount, dest_customer_id)
+                            }).then((result) => {
+                                const last_transaction = db_operations.getUserLastTransaction(customer_id)
+                                console.log("last_transaction", last_transaction)
+                                let last_transaction_id = 0
+                                if (last_transaction && last_transaction.length > 0) {
+                                    last_transaction_id = last_transaction[0]['transaction_id']
+                                }
+                                const insert_data = {
+                                    "transaction_id": last_transaction_id + 1,
+                                    "customer_id": source_customer_id,
+                                    "dest_account": dest_customer_id,
+                                    "transaction_name": "transfer",
+                                    "amount": amountToTransfer,
+                                    "transaction_hash": 'transaction_hash'
+                                }
+                                db_operations.getTransactionById(last_transaction_id + 1).then(data => {
+                                    if (data.length == 0) {
+                                        db_operations.insertTranasaction(insert_data)
+                                            .then(data => {
+                                                db_operations.updateUserBalance({ 'customer_id': srcaccount.account, 'amount': srcbalance1 })
+                                                    .then(res1 => {
+                                                        db_operations.updateUserBalance({ 'customer_id': destacount.account, 'amount': dstbalance })
+                                                            .then(data => {
+                                                                console.log("the amount is credited to " + result)
+                                                                let entry = stateEntries[source_account]
+                                                                let srcaccount = decode(entry);
+                                                                entry = stateEntries[dest_account];
+                                                                let destacount = decode(entry);
+                                                                return {
+                                                                    "source_account": srcaccount,
+                                                                    "dest_account": destacount
+                                                                }
+                                                            })
+                                                    })
+                                            })
+                                    }
                                 })
+
+                            }).catch((err) => {
+                                console.log(err);
                             })
-                            
                         }).catch((err) => {
                             console.log(err);
                         })
-                    }).catch((err) => {
-                        console.log(err);
+
                     })
-  
-                })
-            }
-        })
-    }
+                }
+            })
+        }
     }
 
     withdraw_money(customer_id, amountToWithDraw, state) {
@@ -164,24 +168,28 @@ class SmallBankHandler extends TransactionHandler {
                             const last_transaction = db_operations.getUserLastTransaction(customer_id)
                             console.log("last_transaction", last_transaction)
                             let last_transaction_id = 0
-                            if(last_transaction.length > 0) {
+                            if (last_transaction && last_transaction.length > 0) {
                                 last_transaction_id = last_transaction[0]['transaction_id']
                             }
                             const insert_data = {
-                                "transaction_id": last_transaction_id+1,
-                                "customer_id": account.customer_id,
+                                "transaction_id": last_transaction_id + 1,
+                                "customer_id": customer_id,
                                 "dest_account": null,
                                 "transaction_name": "withdraw",
                                 "amount": amountToWithDraw,
                                 "transaction_hash": 'ndjabja'
                             }
-                            db_operations.insertTranasaction(insert_data)
-                            .then(data => {
-                                db_operations.updateUserBalance({'customer_id': customer_id, 'amount': newBalance})
+                            db_operations.getTransactionById(last_transaction_id + 1).then(data => {
+                                if (data.length == 0) {
+                                    db_operations.insertTranasaction(insert_data)
+                                        .then(data => {
+                                            db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': newBalance })
+                                        })
+                                    const entry = stateEntries[address]
+                                    let account = decode(entry);
+                                    return account
+                                }
                             })
-                            const entry = stateEntries[address]
-                            let account = decode(entry);
-                            return account
                         }).catch((err) => {
                             console.log(err);
                         })
@@ -218,24 +226,29 @@ class SmallBankHandler extends TransactionHandler {
                         const last_transaction = db_operations.getUserLastTransaction(customer_id)
                         console.log("last_transaction", last_transaction)
                         let last_transaction_id = 0
-                        if(last_transaction.length > 0) {
+                        if (last_transaction && last_transaction.length > 0) {
                             last_transaction_id = last_transaction[0]['transaction_id']
                         }
                         const insert_data = {
-                            "transaction_id": last_transaction_id +1,
-                            "customer_id": account.customer_id,
+                            "transaction_id": last_transaction_id + 1,
+                            "customer_id": customer_id,
                             "dest_account": null,
                             "transaction_name": "deposit",
                             "amount": amountToDeposit,
                             "transaction_hash": 'ndjabja'
                         }
-                        db_operations.insertTranasaction(insert_data)
-                        .then(data => {
-                            db_operations.updateUserBalance({'customer_id': customer_id, 'amount': balance})
+                        db_operations.getTransactionById(last_transaction_id + 1).then(data => {
+                            if (data.length == 0) {
+                                db_operations.insertTranasaction(insert_data)
+                                    .then(data => {
+                                        db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': balance })
+                                    })
+                                const entry = stateEntries[address]
+                                let account = decode(entry);
+                                return account
+                            }
                         })
-                        const entry = stateEntries[address]
-                        let account = decode(entry);
-                        return account
+
                     }).catch((err) => {
                         console.log(err);
                     })
@@ -297,34 +310,34 @@ class SmallBankHandler extends TransactionHandler {
         console.log(payload);
         if (payload.verb === 'create_account') {
             this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance, this.signer_public_key, payload.bank_name)
-            .then(create_account_resp => {
-                console.log("create_account_resp", create_account_resp)
+                .then(create_account_resp => {
+                    console.log("create_account_resp", create_account_resp)
                     return create_account_resp
-            })
+                })
         } else if (payload.verb === 'deposit_money') {
             this.deposit_money(payload.customer_id, payload.amount, state)
-            .then(deposit_money_resp => {
-                console.log("deposit_money_resp", deposit_money_resp)
+                .then(deposit_money_resp => {
+                    console.log("deposit_money_resp", deposit_money_resp)
                     return deposit_money_resp
-            })
+                })
         } else if (payload.verb === 'withdraw_money') {
             this.withdraw_money(payload.customer_id, payload.amount, state)
-            .then(withdraw_money_resp => {
-                console.log("withdraw_money_resp", withdraw_money_resp)
+                .then(withdraw_money_resp => {
+                    console.log("withdraw_money_resp", withdraw_money_resp)
                     return withdraw_money_resp
-            })
+                })
         } else if (payload.verb === 'transfer_money') {
             this.transfer_money(payload.source_customer_id, payload.dest_customer_id, payload.amount, state)
-            .then(transfer_money_resp => {
-                console.log("transfer_money_resp", transfer_money_resp)
+                .then(transfer_money_resp => {
+                    console.log("transfer_money_resp", transfer_money_resp)
                     return transfer_money_resp
-            })
+                })
         } else if (payload.verb === 'get_balance') {
             this.get_balance(payload.customer_id, state).then(get_balnce_resp => {
                 console.log("get_balnce_resp", get_balnce_resp)
-                    return get_balnce_resp
+                return get_balnce_resp
             })
-    
+
         } else {
             throw new InvalidTransaction(`Didn't recognize Verb "${verb}".\nMust be one of "create_account,deposit_money,make_deposit,withdraw_money or transfer_money"`)
         }

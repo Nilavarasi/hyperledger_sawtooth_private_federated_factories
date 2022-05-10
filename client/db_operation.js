@@ -8,7 +8,7 @@ class DBOperations {
         CREATE TABLE IF NOT EXISTS "customers"(customer_id text primary key not null, customer_name text not null, public_key text not null, bank_name text not null, balance int)`
         this.bank_operations.run(customer_table_sql)
         const transaction_table_sql = `
-        CREATE TABLE IF NOT EXISTS transactions (transaction_id int primary key NOT NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text not null, dest_account text not null)`
+        CREATE TABLE IF NOT EXISTS transactions (transaction_id text primary key NOT NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text  null, dest_account text null)`
         this.bank_operations.run(transaction_table_sql)
     }
 
@@ -35,12 +35,13 @@ class DBOperations {
         const transaction_name = data['transaction_name'];
         const transaction_hash = data['transaction_hash'];
         const amount = data['amount'];
-        const dest_account = data['dest_account']
+        const transaction_id = data['transaction_id'];
+
         if (customer_id && transaction_name && transaction_hash) {
-            const insert_transaction_query = `insert into transactions (transaction_id, customer_id, transaction_name, amount, transaction_hash, dest_account) VALUES (?, ?, ?, ? , ?, ?)`;
+            const insert_transaction_query = `insert into transactions (transaction_id, customer_id, transaction_name, amount, transaction_hash) VALUES (?, ?, ?, ? , ?)`;
             return this.bank_operations.run(
                 insert_transaction_query,[
-                    transaction_hash, customer_id, transaction_name, amount, transaction_hash, dest_account
+                    transaction_id, customer_id, transaction_name, amount, transaction_hash
                 ]);
         } else {
             return "Column missing"
@@ -78,25 +79,18 @@ class DBOperations {
 
     getUserLastTransaction(customer_id) {
         this.bank_operations.all(
-            `SELECT * FROM transactions WHERE customer_id = ? order by transaction_id desc limit 1`,
+            `SELECT transaction_id FROM transactions WHERE customer_id = ? order by transaction_id desc limit 1`,
             [customer_id]).then(data => {
-                console.log("dabajdh", data)
-                return data['id']
+                return data
             })
     }
 
-    updateTransactionHash(data) {
-        const customer_id = data['customer_id'];
-        const transaction_id = data['transaction_id'];
-        const transaction_hash = data['transaction_hash'];
-        if (customer_id && transaction_hash && transaction_id) {
-            const update_trans_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_id = ?`;
-            return this.bank_operations.run(
-                update_trans_query, [transaction_hash, customer_id, transaction_id]
-            );
-        } else {
-            return "Column missing"
-        }
+    getTransactionById(transaction_id) {
+        return this.bank_operations.all(
+            `SELECT * FROM transactions WHERE transaction_id = ?`,
+            [transaction_id]).then(data => {
+                return data
+            })
     }
 }
 

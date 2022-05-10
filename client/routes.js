@@ -27,7 +27,10 @@ function keyCheck(username) {
 function callSubmitServer(username, payload){
     if(keyManager.doesKeyExist(username)){
         if(batchlistBytes=prepareTransactions(payload,username)){
-        return SubmitToServer(batchlistBytes);
+            return SubmitToServer(batchlistBytes).then(res => {
+                console.log("server res", res);
+                return res;
+            })
         }
     }
 }
@@ -42,13 +45,13 @@ function updateTransHash(customer_id, transcation_hash) {
     const last_transaction = db_operations.getUserLastTransaction(customer_id)
     console.log("last_transaction", last_transaction)
     let last_transaction_id = 0
-    if(last_transaction.length > 0) {
+    if(last_transaction && last_transaction.length > 0) {
         last_transaction_id = last_transaction[0]['transaction_id']
     }
     const transact_data = {
         "customer_id": customer_id,
         "transaction_hash": transcation_hash,
-        "transaction_id": last_transaction_id + 1
+        "transaction_id": last_transaction_id
     }
     db_operations.updateTransactionHash(transact_data)
 }
