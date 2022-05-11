@@ -81,7 +81,7 @@ routes = () => {
                     transcation_hash = getHashFromStr(JSON.parse(callSubRes))
                     console.log("transcation_hash", transcation_hash)
                     const customer_id = data['customer_id']
-                    updateTransHash(customer_id, transcation_hash).then(update_data => {
+                    // updateTransHash(customer_id, transcation_hash).then(update_data => {
                         console.log("updated_data", update_data)
                         let deposit_res = null;
                         db_operations.getUser(customer_id).then(data => {
@@ -92,7 +92,7 @@ routes = () => {
                                 },
                             ];
                             sendResponse(res, response, 200)
-                        });
+                        // });
                     })
                 })
             });
@@ -118,7 +118,7 @@ routes = () => {
                         // subRes = JSON.parse(subRes)
                         // transcation_hash = subRes["link"].split("/")[-1];
                         const customer_id = data['customer_id']
-                        updateTransHash(customer_id, transcation_hash).then(update_data => {
+                        // updateTransHash(customer_id, transcation_hash).then(update_data => {
                             let withdrawRes = null
                             db_operations.getUser(customer_id).then(data => {
                                 withdrawRes = data;
@@ -129,7 +129,7 @@ routes = () => {
                                 ];
                                 sendResponse(res, response, 200)
                             });
-                        })
+                        // })
                     })
 
             });
@@ -151,8 +151,8 @@ routes = () => {
                         transcation_hash = getHashFromStr(JSON.parse(callSubRes))
                         console.log("transcation_hash", transcation_hash)
                         const customer_id = data['source_customer_id']
-                        updateTransHash(customer_id, transcation_hash)
-                            .then(update_data => {
+                        // updateTransHash(customer_id, transcation_hash)
+                        //     .then(update_data => {
                                 let transferResponse = null;
                                 db_operations.getUser(customer_id).then(data => {
                                     transferResponse = data;
@@ -163,7 +163,7 @@ routes = () => {
                                     ];
                                     sendResponse(res, response, 200)
                                 });
-                            })
+                            // })
 
                     })
 
