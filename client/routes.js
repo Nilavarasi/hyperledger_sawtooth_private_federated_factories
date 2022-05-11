@@ -265,13 +265,31 @@ routes = () => {
                     deposit_res = data
                     var response = [
                         {
-                            "message": deposit_res
+                            "user": deposit_res,
+                            "transaction_hash": transcation_hash
                         },
                     ];
                     sendResponse(res, response, 200)
                 // });
             })
         })
+    })
+    app.post("/transactions", function (req, res, next) {
+        data = req.body;
+        console.log("parsed data", data)
+        const username = data['customer_name']
+        keyCheck(username)
+        let transactionRes = null;
+        db_operations.getAllUserTransaction(data['customer_id'])
+        .then(data => {
+            transactionRes = data;
+            var response = [
+                {
+                    "message": transactionRes
+                },
+            ];
+            sendResponse(res, response, 200)
+        });
     })
     app.listen(3000, () => console.log(`Started server at http://localhost:3000!`))
 }
