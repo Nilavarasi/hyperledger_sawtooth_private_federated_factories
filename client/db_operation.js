@@ -51,7 +51,7 @@ class DBOperations {
         const customer_id = data['customer_id'];
         const amount = data['amount'];
         if (customer_id || amount) {
-            const update_balance_query = `UPDATE customers SET amount = ? WHERE customer_id = ?`;
+            const update_balance_query = `UPDATE customers SET balance = ? WHERE customer_id = ?`;
             return this.bank_operations.run(
                 update_balance_query, [customer_id, amount]
             );
