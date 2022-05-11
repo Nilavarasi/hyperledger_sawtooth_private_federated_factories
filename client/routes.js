@@ -63,11 +63,6 @@ function getHashFromStr(str) {
 
 routes = () => {
     app.post('/signup', function (req, res, next) {
-        console.log("got inside")
-        console.log('req', req)
-        console.log('Got body:', req.body);
-        res.sendStatus(200);
-        console.log(req.body)
         const data = req.body;
         console.log("parsed data", data)
 
@@ -157,7 +152,7 @@ routes = () => {
             })
 
     })
-    app.get('/balance', function (req, res, next) {
+    app.post('/balance', function (req, res, next) {
         data = req.body;
         console.log("parsed data", data)
         const username = data['customer_name']
@@ -223,6 +218,34 @@ routes = () => {
         .then(update_trans_res => {
             console.log(update_trans_res)
         })
+    })
+    app.post('/user', function (req, res, next) {
+        data = req.body;
+        console.log("parsed data", data)
+        const username = data['customer_name']
+        if (keyManager.doesKeyExist(username)) {
+            let userRes = null;
+            const customer_id = keyManager.readpublickey(username);
+            db_operations.getUser(customer_id).then(data => {
+                userRes = data;
+                var response = [
+                    {
+                        "message": userRes
+                    },
+                ];
+                sendResponse(res, response, 200)
+            });
+        } else {
+            var response = [
+                {
+                    "message": "Cannot find user"
+                },
+            ];
+            res.statusCode = 200;
+            res.setHeader('content-Type', 'Application/json');
+            res.end(JSON.stringify(response))
+        }
+
     })
     app.listen(3000, () => console.log(`Started server at http://localhost:3000!`))
 }
