@@ -73,10 +73,7 @@ routes = () => {
                 let transcation_hash = null;
                 callSubmitServer(username, data).then(callSubRes => {
                     console.log("callSubRes", callSubRes)
-                    console.log("callSubRes", callSubRes["link"])
-                    console.log("type callSubRes ", typeof callSubRes)
-                    console.log("type callSubRes link ", typeof callSubRes["link"])
-
+                    callSubRes = JSON.parse(callSubRes)
                     transcation_hash = callSubRes["link"].split("/")[-1];
                     const customer_id = data['customer_id']
                     updateTransHash(customer_id, transcation_hash).then(update_data => {
@@ -109,7 +106,8 @@ routes = () => {
                 let transcation_hash = null;
                 callSubmitServer(username, data)
                     .then(subRes => {
-                        transcation_hash = subRes;
+                        subRes = JSON.parse(subRes)
+                        transcation_hash = subRes["link"].split("/")[-1];
                         const customer_id = data['customer_id']
                         updateTransHash(customer_id, transcation_hash).then(update_data => {
                             const withdrawRes = null
@@ -140,7 +138,8 @@ routes = () => {
                 let transcation_hash = null
                 callSubmitServer(username, data)
                     .then(calRes => {
-                        transcation_hash = calRes;
+                        calRes = JSON.parse(calRes)
+                        transcation_hash = calRes["link"].split("/")[-1];
                         const customer_id = data['customer_id']
                         updateTransHash(customer_id, transcation_hash)
                             .then(update_data => {

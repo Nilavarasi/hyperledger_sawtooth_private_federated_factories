@@ -111,7 +111,6 @@ class SmallBankHandler extends TransactionHandler {
                                                     db_operations.updateUserBalance({ 'customer_id': destacount.account, 'amount': dstbalance })
                                                         .then(data => {
                                                             console.log("the amount is credited to " + result)
-                                                            return get_account_address(customer_id)
                                                         })
                                                 })
                                         })
@@ -177,7 +176,9 @@ class SmallBankHandler extends TransactionHandler {
                                     .then(data => {
                                         this.transaction_done = true;
                                         db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': newBalance })
-                                        return get_account_address(customer_id)
+                                        .then(res1=> {
+                                            console.log("Done updateUserBalance for withdraw")
+                                        })
                                     })
                             }
                         }).catch((err) => {
@@ -232,8 +233,9 @@ class SmallBankHandler extends TransactionHandler {
                                 .then(data => {
                                     this.transaction_done = true;
                                     db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': balance })
-                                    return get_account_address(customer_id)
-
+                                    .then(res1 => {
+                                        console.log(" done updateUserBalance for deposit")
+                                    })
                                 })
                         }
 
@@ -297,34 +299,35 @@ class SmallBankHandler extends TransactionHandler {
         let payload = cbor.decode(transactionProcessRequest.payload);
         console.log(payload);
         if (payload.verb === 'create_account') {
-            this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance, this.signer_public_key, payload.bank_name)
-                .then(create_account_resp => {
-                    console.log("create_account_resp", create_account_resp)
-                    return create_account_resp
-                })
+            return this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance, this.signer_public_key, payload.bank_name)
+                // .then(create_account_resp => {
+                //     console.log("create_account_resp", create_account_resp)
+                //     return create_account_resp
+                // })
         } else if (payload.verb === 'deposit_money') {
-            this.deposit_money(payload.customer_id, payload.amount, state)
-                .then(deposit_money_resp => {
-                    console.log("deposit_money_resp", deposit_money_resp)
-                    return deposit_money_resp
-                })
+            return this.deposit_money(payload.customer_id, payload.amount, state)
+                // .then(deposit_money_resp => {
+                //     console.log("deposit_money_resp", deposit_money_resp)
+                //     return deposit_money_resp
+                // })
         } else if (payload.verb === 'withdraw_money') {
-            this.withdraw_money(payload.customer_id, payload.amount, state)
-                .then(withdraw_money_resp => {
-                    console.log("withdraw_money_resp", withdraw_money_resp)
-                    return withdraw_money_resp
-                })
+            return this.withdraw_money(payload.customer_id, payload.amount, state)
+                // .then(withdraw_money_resp => {
+                //     console.log("withdraw_money_resp", withdraw_money_resp)
+                //     return withdraw_money_resp
+                // })
         } else if (payload.verb === 'transfer_money') {
-            this.transfer_money(payload.source_customer_id, payload.dest_customer_id, payload.amount, state)
-                .then(transfer_money_resp => {
-                    console.log("transfer_money_resp", transfer_money_resp)
-                    return transfer_money_resp
-                })
+            return this.transfer_money(payload.source_customer_id, payload.dest_customer_id, payload.amount, state)
+                // .then(transfer_money_resp => {
+                //     console.log("transfer_money_resp", transfer_money_resp)
+                //     return transfer_money_resp
+                // })
         } else if (payload.verb === 'get_balance') {
-            this.get_balance(payload.customer_id, state).then(get_balnce_resp => {
-                console.log("get_balnce_resp", get_balnce_resp)
-                return get_balnce_resp
-            })
+            return this.get_balance(payload.customer_id, state)
+            // .then(get_balnce_resp => {
+            //     console.log("get_balnce_resp", get_balnce_resp)
+            //     return get_balnce_resp
+            // })
 
         } else {
             throw new InvalidTransaction(`Didn't recognize Verb "${verb}".\nMust be one of "create_account,deposit_money,make_deposit,withdraw_money or transfer_money"`)
