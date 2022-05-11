@@ -73,6 +73,10 @@ routes = () => {
                 let transcation_hash = null;
                 callSubmitServer(username, data).then(callSubRes => {
                     console.log("callSubRes", callSubRes)
+                    console.log("callSubRes", callSubRes["link"])
+                    console.log("type callSubRes ", type(callSubRes))
+                    console.log("type callSubRes link ", type(callSubRes["link"]))
+
                     transcation_hash = callSubRes["link"].split("/")[-1];
                     const customer_id = data['customer_id']
                     updateTransHash(customer_id, transcation_hash).then(update_data => {
