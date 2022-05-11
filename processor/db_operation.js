@@ -53,7 +53,7 @@ class DBOperations {
         if (customer_id || amount) {
             const update_balance_query = `UPDATE customers SET balance = ? WHERE customer_id = ?`;
             return this.bank_operations.run(
-                update_balance_query, [customer_id, amount]
+                update_balance_query, [amount, customer_id]
             );
         } else {
             return "Column missing"
@@ -93,9 +93,17 @@ class DBOperations {
             })
     }
 
-    updateTransactionHash(customer_id, transaction_hash, transaction_id) {
-        if (customer_id || amount) {
-            const update_balance_query = `UPDATE transactions SET transaction_hash = ? and transaction_id = ? WHERE customer_id = ?`;
+    updateTransactionHash(data) {
+        const customer_id = data['customer_id'];
+        const transaction_hash = data['transaction_hash'];
+        const transaction_id = data['transaction_id'];
+        console.log({
+            "customer_id": customer_id,
+            "transaction_hash": transaction_hash,
+            "transaction_id": transaction_id
+        })
+        if (customer_id || transaction_hash || transaction_id) {
+            const update_balance_query = `UPDATE transactions SET transaction_hash = ? and transaction_id = ? WHERE customer_id = ? and transaction_id is null`;
             return this.bank_operations.run(
                 update_balance_query, [transaction_hash, transaction_id, customer_id]
             );

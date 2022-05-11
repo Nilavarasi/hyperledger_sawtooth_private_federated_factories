@@ -9,13 +9,14 @@ function KeyManager() {
     
 }
 
-KeyManager.prototype.createkeys = function(username) {
+KeyManager.prototype.createkeys = function(username, password) {
     privateKey = context.newRandomPrivateKey()
     signer = new CryptoFactory(context).newSigner(privateKey)
     output = {
         PRIVATE_KEY: privateKey.asHex(),
         PUBLIC_KEY: signer.getPublicKey().asHex(),
-        USERNAME: username
+        USERNAME: username,
+        PASSWORD: password
     }
 
     return  JSON.stringify(output);
@@ -60,7 +61,16 @@ KeyManager.prototype.readpublickey = function(username){
 KeyManager.prototype.doesKeyExist = function(username){
         return (fs.existsSync(path.resolve(__dirname, './keys/' + username + '.env')));   
     }
-  
+
+KeyManager.prototype.isAuthorizedUser = function(username, password) {
+    var res=fs.readFileSync(path.resolve(__dirname, './keys/' + username + '.env'));
+    const password_in_file = JSON.parse(res).PASSWORD;
+    if (password_in_file == password) {
+        return true;
+    } else {
+        return false;
+    }
+} 
  module.exports =  KeyManager ;
 
 

@@ -19,6 +19,8 @@ class SmallBankHandler extends TransactionHandler {
     constructor() {
         super(env.familyName, [env.familyVersion], [env.TP_NAMESPACE])
         this.signer_public_keys = "";
+        this.srb = 0;
+        this.rb = 0;
     }
 
     get_account(customer_id, state) {
@@ -80,38 +82,22 @@ class SmallBankHandler extends TransactionHandler {
                         destacount.account.checking_balance = dstbalance;
                         console.log(destacount.account);
                         console.log(srcaccount.account);
-                        const insert_data = {
-                            "transaction_id": null,
-                            "customer_id": source_customer_id,
-                            "dest_account": dest_customer_id,
-                            "transaction_name": "transfer",
-                            "amount": amountToTransfer,
-                            "transaction_hash": ''
-                        }
-                        db_operations.insertTranasaction(insert_data)
-                            .then(data => {
-                                this.transaction_done = true
-                                db_operations.updateUserBalance({ 'customer_id': srcaccount.account, 'amount': srcbalance1 })
-                                    .then(res1 => {
-                                        db_operations.updateUserBalance({ 'customer_id': destacount.account, 'amount': dstbalance })
-                                            .then(data => {
-                                                return state.setState({
-                                                    [source_account]: encode(srcaccount, source_customer_id)
-                                                }).then((result) => {
-                                                    console.log("amount is debited from" + result)
-                                                    return state.setState({
-                                                        [dest_account]: encode(destacount, dest_customer_id)
-                                                    }).then((result) => {
-                                                        console.log("the amount is credited to " + result)
-                                                    }).catch((err) => {
-                                                        console.log(err);
-                                                    })
-                                                }).catch((err) => {
-                                                    console.log(err);
-                                                })
-                                            })
-                                    })
+                        this.srb = srcbalance1;
+                        this.rb = dstbalance;
+                        return state.setState({
+                            [source_account]: encode(srcaccount, source_customer_id)
+                        }).then((result) => {
+                            console.log("amount is debited from" + result)
+                            return state.setState({
+                                [dest_account]: encode(destacount, dest_customer_id)
+                            }).then((result) => {
+                                console.log("the amount is credited to " + result)
+                            }).catch((err) => {
+                                console.log(err);
                             })
+                        }).catch((err) => {
+                            console.log(err);
+                        })
                     })
                 }
             })
@@ -142,29 +128,14 @@ class SmallBankHandler extends TransactionHandler {
                         account.account.checking_balance = newBalance;
                         console.log(account.customer_id);
                         console.log(account.account);
-
-                        const insert_data = {
-                            "transaction_id": null,
-                            "customer_id": customer_id,
-                            "dest_account": null,
-                            "transaction_name": "withdraw",
-                            "amount": amountToWithDraw,
-                            "transaction_hash": ''
-                        }
-                        db_operations.insertTranasaction(insert_data)
-                            .then(data => {
-                                this.transaction_done = true;
-                                db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': newBalance })
-                                    .then(res1 => {
-                                        return state.setState({
-                                            [address]: encode(account, customer_id)
-                                        }).then((result) => {
-                                            console.log("the amount is debited" + result)
-                                        }).catch((err) => {
-                                            console.log(err);
-                                        })
-                                    })
-                            })
+                        this.srb = newBalance;
+                        return state.setState({
+                            [address]: encode(account, customer_id)
+                        }).then((result) => {
+                            console.log("the amount is debited" + result)
+                        }).catch((err) => {
+                            console.log(err);
+                        })
                     }
                 }
             })
@@ -191,28 +162,15 @@ class SmallBankHandler extends TransactionHandler {
                     account.account.checking_balance = balance;
                     console.log(account.customer_id);
                     console.log(account.account);
-                    const insert_data = {
-                        "transaction_id": null,
-                        "customer_id": customer_id,
-                        "dest_account": null,
-                        "transaction_name": "deposit",
-                        "amount": amountToDeposit,
-                        "transaction_hash": ''
-                    }
-                    db_operations.insertTranasaction(insert_data)
-                        .then(data => {
-                            this.transaction_done = true;
-                            db_operations.updateUserBalance({ 'customer_id': customer_id, 'amount': balance })
-                                .then(res1 => {
-                                    return state.setState({
-                                        [address]: encode(account, customer_id)
-                                    }).then((result) => {
-                                        console.log("the amount is credited")
-                                    }).catch((err) => {
-                                        console.log(err);
-                                    })
-                                })
-                        })
+                    this.srb = balance;
+
+                    return state.setState({
+                        [address]: encode(account, customer_id)
+                    }).then((result) => {
+                        console.log("the amount is credited")
+                    }).catch((err) => {
+                        console.log(err);
+                    })
                 }
             })
         }
@@ -273,10 +231,70 @@ class SmallBankHandler extends TransactionHandler {
             return this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance, this.signer_public_key, payload.bank_name)
         } else if (payload.verb === 'deposit_money') {
             return this.deposit_money(payload.customer_id, payload.amount, state)
+            .then(resData => {
+                const insert_data = {
+                    "transaction_id": null,
+                    "customer_id": payload.customer_id,
+                    "dest_account": null,
+                    "transaction_name": "deposit",
+                    "amount": payload.checking_balance,
+                    "transaction_hash": ''
+                }
+                db_operations.insertTranasaction(insert_data)
+                .then(ins_res=>{
+                    console.log("Inserted Transaction result", ins_res)
+                    db_operations.updateUserBalance({ 'customer_id': payload.customer_id, 'amount': this.srb })
+                    .then(upd_res => {
+                        console.log("Updated User Balance Result", upd_res)
+                    })
+                })
+
+            })
         } else if (payload.verb === 'withdraw_money') {
             return this.withdraw_money(payload.customer_id, payload.amount, state)
+            .then(resData => {
+                const insert_data = {
+                    "transaction_id": null,
+                    "customer_id": payload.customer_id,
+                    "dest_account": null,
+                    "transaction_name": "withdraw",
+                    "amount": payload.amount,
+                    "transaction_hash": ''
+                }
+                db_operations.insertTranasaction(insert_data)
+                .then(ins_res=>{
+                    console.log("Inserted Transaction result", ins_res)
+                    db_operations.updateUserBalance({ 'customer_id': payload.customer_id, 'amount': this.srb })
+                    .then(upd_res => {
+                        console.log("Updated User Balance Result", upd_res)
+                    })
+                })
+
+            })
         } else if (payload.verb === 'transfer_money') {
             return this.transfer_money(payload.source_customer_id, payload.dest_customer_id, payload.amount, state)
+            .then(res => {
+                const insert_data = {
+                    "transaction_id": null,
+                    "customer_id": payload.source_customer_id,
+                    "dest_account": payload.dest_customer_id,
+                    "transaction_name": "transfer",
+                    "amount": payload.amount,
+                    "transaction_hash": ''
+                }
+                db_operations.insertTranasaction(insert_data)
+                    .then(trans_res => {
+                        console.log("Inserted in tranasactions table", trans_res)
+                        db_operations.updateUserBalance({ 'customer_id': payload.source_customer_id, 'amount': this.srb })
+                            .then(upd_res1 => {
+                                console.log("Updated Balance for first user", upd_res1)
+                                db_operations.updateUserBalance({ 'customer_id': payload.dest_customer_id, 'amount': this.rb })
+                                    .then(upd_res2 => {
+                                        console.log("Updated Balance for second user", upd_res2)
+                                    })
+                                })
+                            })
+            })
         } else if (payload.verb === 'get_balance') {
             return this.get_balance(payload.customer_id, state)
 

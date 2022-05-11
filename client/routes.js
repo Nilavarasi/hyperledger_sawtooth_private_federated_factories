@@ -53,7 +53,12 @@ function updateTransHash(customer_id, transcation_hash) {
         "transaction_hash": transcation_hash,
         "transaction_id": last_transaction_id + 1
     }
-    db_operations.updateTransactionHash(transact_data)
+    return db_operations.updateTransactionHash(transact_data)
+}
+
+function getHashFromStr (str) {
+    const splited_first_str = callSubRes["link"].split("/")[callSubRes["link"].split("/").length - 1];
+    return splited_first_str.split("=")[splited_first_str.split("=").length - 1]
 }
 //create a server object:
 routes = () => {
@@ -73,10 +78,11 @@ routes = () => {
                 let transcation_hash = null;
                 callSubmitServer(username, data).then(callSubRes => {
                     console.log("callSubRes", callSubRes)
-                    callSubRes = JSON.parse(callSubRes)
-                    transcation_hash = callSubRes["link"].split("/")[-1];
+                    transcation_hash = getHashFromStr(JSON.parse(callSubRes))
+                    console.log("transcation_hash", transcation_hash)
                     const customer_id = data['customer_id']
                     updateTransHash(customer_id, transcation_hash).then(update_data => {
+                        console.log("updated_data", update_data)
                         let deposit_res = null;
                         db_operations.getUser(customer_id).then(data => {
                             deposit_res = data
@@ -105,9 +111,12 @@ routes = () => {
                 keyCheck(username)
                 let transcation_hash = null;
                 callSubmitServer(username, data)
-                    .then(subRes => {
-                        subRes = JSON.parse(subRes)
-                        transcation_hash = subRes["link"].split("/")[-1];
+                    .then(callSubRes => {
+                        console.log("callSubRes", callSubRes)
+                        transcation_hash = getHashFromStr(JSON.parse(callSubRes))
+                        console.log("transcation_hash", transcation_hash)
+                        // subRes = JSON.parse(subRes)
+                        // transcation_hash = subRes["link"].split("/")[-1];
                         const customer_id = data['customer_id']
                         updateTransHash(customer_id, transcation_hash).then(update_data => {
                             const withdrawRes = null
@@ -137,9 +146,10 @@ routes = () => {
                 keyCheck(username)
                 let transcation_hash = null
                 callSubmitServer(username, data)
-                    .then(calRes => {
-                        calRes = JSON.parse(calRes)
-                        transcation_hash = calRes["link"].split("/")[-1];
+                    .then(callSubRes => {
+                        console.log("callSubRes", callSubRes)
+                        transcation_hash = getHashFromStr(JSON.parse(callSubRes))
+                        console.log("transcation_hash", transcation_hash)
                         const customer_id = data['customer_id']
                         updateTransHash(customer_id, transcation_hash)
                             .then(update_data => {
@@ -194,19 +204,30 @@ routes = () => {
                 data = JSON.parse(data)
                 console.log("parsed data", data)
                 const username = data['customer_name']
+                const password = data['password']
                 if (keyManager.doesKeyExist(username)) {
-                    console.log("keys are already created for" + username);
-                    let user_data = null;
-                    db_operations.getUser(data['customer_id']).then(data => {
-                        user_data = data;
+                    if(keyManager.isAuthorizedUser(username, password)){
+                        console.log("keys are already created for" + username);
+                        let user_data = null;
+                        db_operations.getUser(data['customer_id']).then(data => {
+                            user_data = data;
+                            var response = [
+                                {
+                                    "message": "Successfully logged In",
+                                    "user": user_data
+                                },
+                            ];
+                            res.statusCode = 200;
+                        });
+                    }   else {
                         var response = [
                             {
-                                "message": "Successfully logged In",
-                                "user": user_data
+                                "message": "Unauthorized User. Wrong Credentials."
                             },
                         ];
-                        res.statusCode = 200;
-                    });
+                        res.statusCode = 403;
+                    }
+                    
                 } else {
                     var response = [
                         {
@@ -228,7 +249,8 @@ routes = () => {
                 data = JSON.parse(data)
                 console.log("parsed data", data)
                 const username = data['customer_name']
-                var output = keyManager.createkeys(username);
+                const password = data['password']
+                var output = keyManager.createkeys(username, password);
                 keyManager.savekeys(username, output);
                 const customer_id = keyManager.readpublickey(username);
                 const payload = {
