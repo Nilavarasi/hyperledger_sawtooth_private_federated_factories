@@ -95,7 +95,7 @@ class SmallBankHandler extends TransactionHandler {
                                     last_transaction_id = last_transaction[0]['transaction_id']
                                 }
                                 const insert_data = {
-                                    "transaction_id": last_transaction_id + 1,
+                                    "transaction_id": null,
                                     "customer_id": source_customer_id,
                                     "dest_account": dest_customer_id,
                                     "transaction_name": "transfer",
@@ -165,7 +165,7 @@ class SmallBankHandler extends TransactionHandler {
                                 last_transaction_id = last_transaction[0]['transaction_id']
                             }
                             const insert_data = {
-                                "transaction_id": last_transaction_id + 1,
+                                "transaction_id": null,
                                 "customer_id": customer_id,
                                 "dest_account": null,
                                 "transaction_name": "withdraw",
@@ -220,7 +220,7 @@ class SmallBankHandler extends TransactionHandler {
                             last_transaction_id = last_transaction[0]['transaction_id']
                         }
                         const insert_data = {
-                            "transaction_id": last_transaction_id + 1,
+                            "transaction_id": null,
                             "customer_id": customer_id,
                             "dest_account": null,
                             "transaction_name": "deposit",

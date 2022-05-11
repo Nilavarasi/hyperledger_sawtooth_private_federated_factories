@@ -51,7 +51,7 @@ function updateTransHash(customer_id, transcation_hash) {
     const transact_data = {
         "customer_id": customer_id,
         "transaction_hash": transcation_hash,
-        "transaction_id": last_transaction_id
+        "transaction_id": last_transaction_id + 1
     }
     db_operations.updateTransactionHash(transact_data)
 }
@@ -74,8 +74,8 @@ routes = () => {
                 callSubmitServer(username, data).then(callSubRes => {
                     console.log("callSubRes", callSubRes)
                     console.log("callSubRes", callSubRes["link"])
-                    console.log("type callSubRes ", type(callSubRes))
-                    console.log("type callSubRes link ", type(callSubRes["link"]))
+                    console.log("type callSubRes ", typeof callSubRes)
+                    console.log("type callSubRes link ", typeof callSubRes["link"])
 
                     transcation_hash = callSubRes["link"].split("/")[-1];
                     const customer_id = data['customer_id']

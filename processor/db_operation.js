@@ -8,7 +8,7 @@ class DBOperations {
         CREATE TABLE IF NOT EXISTS "customers"(customer_id text primary key not null, customer_name text not null, public_key text not null, bank_name text not null, balance int)`
         this.bank_operations.run(customer_table_sql)
         const transaction_table_sql = `
-        CREATE TABLE IF NOT EXISTS transactions (transaction_id text primary key NOT NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text  null, dest_account text null)`
+        CREATE TABLE IF NOT EXISTS transactions (transaction_id text NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text  null, dest_account text null)`
         this.bank_operations.run(transaction_table_sql)
     }
 
@@ -79,7 +79,7 @@ class DBOperations {
 
     getUserLastTransaction(customer_id) {
         this.bank_operations.all(
-            `SELECT transaction_id FROM transactions WHERE customer_id = ? order by transaction_id desc limit 1`,
+            `SELECT transaction_id FROM transactions WHERE customer_id = ? and transaction_id is not null order by transaction_id desc limit 1`,
             [customer_id]).then(data => {
                 return data
             })
@@ -95,9 +95,9 @@ class DBOperations {
 
     updateTransactionHash(customer_id, transaction_hash, transaction_id) {
         if (customer_id || amount) {
-            const update_balance_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_id = ?`;
+            const update_balance_query = `UPDATE transactions SET transaction_hash = ? and transaction_id = ? WHERE customer_id = ?`;
             return this.bank_operations.run(
-                update_balance_query, [transaction_hash, customer_id, transaction_id]
+                update_balance_query, [transaction_hash, transaction_id, customer_id]
             );
         } else {
             return "Column missing"
