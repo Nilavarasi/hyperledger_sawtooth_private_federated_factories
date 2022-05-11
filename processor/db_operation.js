@@ -105,13 +105,12 @@ class DBOperations {
         if (customer_id || transaction_hash || transaction_id) {
             const update_hash_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_id is null`;
             this.bank_operations.run(
-                update_hash_query, [transaction_hash, customer_id, transaction_id]
+                update_hash_query, [transaction_hash, customer_id]
             ).then(update_hash_res => {
                 console.log("update_hash_res", update_hash_res)
                 const remove_dup_query = `delete from transactions where rowid not in (select min(rowid) from transactions group by transaction_hash);`;
-                this.bank_operations.run(
-                    remove_dup_query
-                ).then(delete_dup_res => {
+                this.bank_operations.run(remove_dup_query)
+                .then(delete_dup_res => {
                     console.log("delete_dup_res", delete_dup_res)
                     const update_id_query = `UPDATE transactions SET transaction_id = ? WHERE customer_id = ? and transaction_hash = ?`;
                     return  this.bank_operations.run(
