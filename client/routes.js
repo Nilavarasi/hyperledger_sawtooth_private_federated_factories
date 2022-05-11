@@ -57,7 +57,7 @@ function updateTransHash(customer_id, transcation_hash) {
 }
 
 function getHashFromStr (str) {
-    const splited_first_str = callSubRes["link"].split("/")[callSubRes["link"].split("/").length - 1];
+    const splited_first_str = str["link"].split("/")[str["link"].split("/").length - 1];
     return splited_first_str.split("=")[splited_first_str.split("=").length - 1]
 }
 //create a server object:
@@ -119,7 +119,7 @@ routes = () => {
                         // transcation_hash = subRes["link"].split("/")[-1];
                         const customer_id = data['customer_id']
                         updateTransHash(customer_id, transcation_hash).then(update_data => {
-                            const withdrawRes = null
+                            let withdrawRes = null
                             db_operations.getUser(customer_id).then(data => {
                                 withdrawRes = data;
                                 var response = [
@@ -150,7 +150,7 @@ routes = () => {
                         console.log("callSubRes", callSubRes)
                         transcation_hash = getHashFromStr(JSON.parse(callSubRes))
                         console.log("transcation_hash", transcation_hash)
-                        const customer_id = data['customer_id']
+                        const customer_id = data['source_customer_id']
                         updateTransHash(customer_id, transcation_hash)
                             .then(update_data => {
                                 let transferResponse = null;
