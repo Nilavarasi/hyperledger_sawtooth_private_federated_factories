@@ -41,17 +41,18 @@ function sendResponse(res, data, statusCode) {
     res.end(JSON.stringify(data))
 }
 
-function updateTransHash(customer_id, transcation_hash) {
-    const last_transaction = db_operations.getUserLastTransaction(customer_id)
-    console.log("last_transaction", last_transaction)
-    let last_transaction_id = 0
-    if (last_transaction && last_transaction.length > 0) {
-        last_transaction_id = last_transaction[0]['transaction_id']
-    }
+function updateTransHash(customer_id, last_amount, transcation_hash, last_transaction_name) {
+    // const last_transaction = db_operations.getUserLastTransaction(customer_id)
+    // console.log("last_transaction", last_transaction)
+    // let last_transaction_id = 0
+    // if (last_transaction && last_transaction.length > 0) {
+    //     last_transaction_id = last_transaction[0]['transaction_id']
+    // }
     const transact_data = {
         "customer_id": customer_id,
         "transaction_hash": transcation_hash,
-        "transaction_id": last_transaction_id + 1
+        "last_amount": last_amount,
+        "last_transaction_name": last_transaction_name
     }
     return db_operations.updateTransactionHash(transact_data)
 }
@@ -250,6 +251,11 @@ routes = () => {
                 console.log("parsed data", data)
                 const username = data['customer_name']
                 const password = data['password']
+                if (keyManager.doesKeyExist(username)) {
+                    res.statusCode = 403;
+                    res.setHeader('content-Type', 'Application/json');
+                    res.end("User Exists")
+                }
                 var output = keyManager.createkeys(username, password);
                 keyManager.savekeys(username, output);
                 const customer_id = keyManager.readpublickey(username);
@@ -278,7 +284,23 @@ routes = () => {
                         });
                     })
             })
-        } else {
+        } else if((url === '/update_hash') && req.method == 'POST') {
+            req.on('data', (chunk) => {
+                data.push(chunk)
+            })
+            req.on('end', () => {
+                data = JSON.parse(data)
+                console.log("parsed data", data)
+                const customer_id = data['customer_id'];
+                const last_amount = data['last_amount'];
+                const transaction_hash = data['transaction_hash']
+                const last_transaction_name = data['last_transaction_name'];
+                updateTransHash(customer_id, last_amount, transaction_hash, last_transaction_name)
+                .then(update_trans_res => {
+                    console.log(update_trans_res)
+                })
+            })
+        }else {
             res.statusCode = 402;
             res.setHeader('content-Type', 'Application/json');
             res.end("Unknown request")

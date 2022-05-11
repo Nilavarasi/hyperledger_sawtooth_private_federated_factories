@@ -96,28 +96,21 @@ class DBOperations {
     updateTransactionHash(data) {
         const customer_id = data['customer_id'];
         const transaction_hash = data['transaction_hash'];
-        const transaction_id = data['transaction_id'];
+        const last_transaction_name = data['last_transaction_name'];
+        const last_amount = data['last_transaction_name'];
         console.log({
             "customer_id": customer_id,
             "transaction_hash": transaction_hash,
             "transaction_id": transaction_id
         })
         if (customer_id || transaction_hash || transaction_id) {
-            const update_hash_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_id is null`;
+            const update_hash_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_name = ? and amount = ?`;
             return this.bank_operations.run(
-                update_hash_query, [transaction_hash, customer_id]
+                update_hash_query, [transaction_hash, customer_id, last_transaction_name, last_amount]
             ).then(update_hash_res => {
                 console.log("update_hash_res", update_hash_res)
                 const remove_dup_query = `delete from transactions where rowid not in (select min(rowid) from transactions group by transaction_hash);`;
                 return this.bank_operations.run(remove_dup_query)
-                .then(delete_dup_res => {
-                    console.log("delete_dup_res", delete_dup_res)
-                    const update_id_query = `UPDATE transactions SET transaction_id = ? WHERE customer_id = ? and transaction_hash = ?`;
-                    return  this.bank_operations.run(
-                        update_id_query, [transaction_id, customer_id, transaction_hash]
-                    )
-                })
-                
             });
         } else {
             return "Column missing"
