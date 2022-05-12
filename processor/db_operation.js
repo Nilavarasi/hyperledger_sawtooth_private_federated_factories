@@ -8,7 +8,7 @@ class DBOperations {
         CREATE TABLE IF NOT EXISTS "customers"(customer_id text primary key not null, customer_name text not null, public_key text not null, bank_name text not null, balance int)`
         this.bank_operations.run(customer_table_sql)
         const transaction_table_sql = `
-        CREATE TABLE IF NOT EXISTS transactions (transaction_id text NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text  null, dest_account text null)`
+        CREATE TABLE IF NOT EXISTS transactions (transaction_id text NULL, customer_id TEXT NOT NULL, transaction_name TEXT NOT NULL, amount int null, transaction_hash text  null, dest_account text null, created_at text not null, customer_name text not null, dest_customer_name text null)`
         this.bank_operations.run(transaction_table_sql)
     }
 
@@ -34,14 +34,25 @@ class DBOperations {
         const customer_id = data['customer_id'];
         const transaction_name = data['transaction_name'];
         const transaction_hash = data['transaction_hash'];
+        const dest_account = data['dest_account'];
         const amount = data['amount'];
         const transaction_id = data['transaction_id'];
-
+        const created_at = data['created_at']
+        const customer_name = data['customer_name']
+        const dest_customer_name = data['dest_customer_name']
         if (customer_id && transaction_name) {
-            const insert_transaction_query = `insert into transactions (transaction_id, customer_id, transaction_name, amount, transaction_hash) VALUES (?, ?, ?, ? , ?)`;
+            const insert_transaction_query = `insert into transactions (transaction_id, customer_id, transaction_name, amount, transaction_hash, created_at, customer_name, dest_customer_name, dest_account) VALUES (?, ?, ?, ? , ?, ?, ?, ?)`;
             return this.bank_operations.run(
                 insert_transaction_query,[
-                    transaction_id, customer_id, transaction_name, amount, transaction_hash
+                    transaction_id,
+                    customer_id,
+                    transaction_name,
+                    amount,
+                    transaction_hash,
+                    created_at,
+                    customer_name,
+                    dest_customer_name,
+                    dest_account
                 ]);
         } else {
             return "Column missing"
@@ -62,8 +73,8 @@ class DBOperations {
 
     getAllUserTransaction(id) {
         return this.bank_operations.all(
-            `SELECT * FROM transactions WHERE customer_id = ?`,
-            [id]).then(data => {
+            `SELECT * FROM transactions WHERE customer_id = ? or dest_account = ?`,
+            [id, id]).then(data => {
                 return data
             })
     }
@@ -71,6 +82,14 @@ class DBOperations {
     getUser(id) {
         return this.bank_operations.all(
             `SELECT * FROM customers WHERE customer_id = ?`,
+            [id]).then(data => {
+                return data
+            })
+    }
+
+    getAllUser() {
+        return this.bank_operations.all(
+            `SELECT * FROM customers`,
             [id]).then(data => {
                 return data
             })

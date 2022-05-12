@@ -238,7 +238,9 @@ class SmallBankHandler extends TransactionHandler {
                         "dest_account": null,
                         "transaction_name": "deposit",
                         "amount": payload.amount,
-                        "transaction_hash": ''
+                        "transaction_hash": '',
+                        "created_at": Date.now(),
+                        "customer_name": payload.customer_name,
                     }
                     db_operations.insertTranasaction(insert_data)
                         .then(ins_res => {
@@ -259,7 +261,9 @@ class SmallBankHandler extends TransactionHandler {
                         "dest_account": null,
                         "transaction_name": "withdraw",
                         "amount": payload.amount,
-                        "transaction_hash": ''
+                        "transaction_hash": '',
+                        "created_at": Date.now(),
+                        "customer_name": payload.customer_name,
                     }
                     db_operations.insertTranasaction(insert_data)
                         .then(ins_res => {
@@ -280,7 +284,10 @@ class SmallBankHandler extends TransactionHandler {
                         "dest_account": payload.dest_customer_id,
                         "transaction_name": "transfer",
                         "amount": payload.amount,
-                        "transaction_hash": ''
+                        "transaction_hash": '',
+                        "created_at": Date.now(),
+                        "customer_name": payload.source_customer_name,
+                        "dest_customer_name": payload.dest_customer_name,
                     }
                     db_operations.insertTranasaction(insert_data)
                         .then(trans_res => {

@@ -217,6 +217,10 @@ routes = () => {
         updateTransHash(customer_id, last_amount, transaction_hash, last_transaction_name)
         .then(update_trans_res => {
             console.log(update_trans_res)
+            var response = [{
+                "message": "successfully updated hash"
+            }];
+            sendResponse(res, response, 200)
         })
     })
     app.post('/user', function (req, res, next) {
@@ -286,6 +290,17 @@ routes = () => {
             var response = [
                 {
                     "message": transactionRes
+                },
+            ];
+            sendResponse(res, response, 200)
+        });
+    })
+    app.post("/users",function (req, res, next) {
+        db_operations.getAllUser().then(data => {
+            userRes = data;
+            var response = [
+                {
+                    "message": userRes
                 },
             ];
             sendResponse(res, response, 200)
