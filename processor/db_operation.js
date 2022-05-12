@@ -61,7 +61,7 @@ class DBOperations {
     }
 
     getAllUserTransaction(id) {
-        this.bank_operations.all(
+        return this.bank_operations.all(
             `SELECT * FROM transactions WHERE customer_id = ?`,
             [id]).then(data => {
                 return data
@@ -78,7 +78,7 @@ class DBOperations {
 
 
     getUserLastTransaction(customer_id) {
-        this.bank_operations.all(
+        return this.bank_operations.all(
             `SELECT transaction_id FROM transactions WHERE customer_id = ? and transaction_id is not null order by transaction_id desc limit 1`,
             [customer_id]).then(data => {
                 return data

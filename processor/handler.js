@@ -237,7 +237,7 @@ class SmallBankHandler extends TransactionHandler {
                         "customer_id": payload.customer_id,
                         "dest_account": null,
                         "transaction_name": "deposit",
-                        "amount": payload.checking_balance,
+                        "amount": payload.amount,
                         "transaction_hash": ''
                     }
                     db_operations.insertTranasaction(insert_data)
