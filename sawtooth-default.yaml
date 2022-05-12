@@ -32,19 +32,22 @@ services:
     container_name: sawtooth-validator-default-1
     expose:
       - 4004
+      - 8800
+      - 5050
     ports:
       - "4004:4004"
     # start the validator with an empty genesis batch
     entrypoint: "bash -c \"\
         sawadm keygen --force  && \
         sawtooth keygen my_key --force && \
-        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawset genesis -k /root/.sawtooth/keys/my_key.priv && \
         sawadm genesis config-genesis.batch && \
         sawtooth-validator -vv \
-          --endpoint tcp://validator-1:8800 \
-          --bind component:tcp://eth0:4004 \
           --bind network:tcp://eth0:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind consensus:tcp://eth0:5050 \
           --peering static \
+          --endpoint tcp://validator-1:8800 \
           --scheduler parallel \
           --network-auth trust
       \""
@@ -53,19 +56,22 @@ services:
     container_name: sawtooth-validator-default-2
     expose:
       - 4004
-    ports:
-      - "4004:4004"
+      - 8800
+      - 5050
+    # ports:
+    #   - "4004:4004"
     # start the validator with an empty genesis batch
     entrypoint: "bash -c \"\
         sawadm keygen --force  && \
         sawtooth keygen my_key --force && \
-        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawset genesis -k /root/.sawtooth/keys/my_key1.priv && \
         sawadm genesis config-genesis.batch && \
         sawtooth-validator -vv \
-          --endpoint tcp://validator-2:8800 \
-          --bind component:tcp://eth0:4004 \
           --bind network:tcp://eth0:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind consensus:tcp://eth0:5050 \
           --peering static \
+          --endpoint tcp://validator-1:8800 \
           --peers tcp://validator-1:8800 \
           --scheduler parallel \
           --network-auth trust
@@ -75,19 +81,22 @@ services:
     container_name: sawtooth-validator-default-3
     expose:
       - 4004
-    ports:
-      - "4004:4004"
+      - 8800
+      - 5050
+    # ports:
+    #   - "4004:4004"
     # start the validator with an empty genesis batch
     entrypoint: "bash -c \"\
         sawadm keygen --force  && \
         sawtooth keygen my_key --force && \
-        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawset genesis -k /root/.sawtooth/keys/my_key2.priv && \
         sawadm genesis config-genesis.batch && \
         sawtooth-validator -vv \
-          --endpoint tcp://validator-3:8800 \
-          --bind component:tcp://eth0:4004 \
           --bind network:tcp://eth0:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind consensus:tcp://eth0:5050 \
           --peering static \
+          --endpoint tcp://validator-1:8800 \
           --peers tcp://validator-1:8800,tcp://validator-2:8800 \
           --scheduler parallel \
           --network-auth trust
@@ -97,19 +106,22 @@ services:
     container_name: sawtooth-validator-default-4
     expose:
       - 4004
-    ports:
-      - "4004:4004"
+      - 8800
+      - 5050
+    # ports:
+    #   - "4004:4004"
     # start the validator with an empty genesis batch
     entrypoint: "bash -c \"\
         sawadm keygen --force  && \
         sawtooth keygen my_key --force && \
-        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawset genesis -k /root/.sawtooth/keys/my_key3.priv && \
         sawadm genesis config-genesis.batch && \
         sawtooth-validator -vv \
-          --endpoint tcp://validator-4:8800 \
-          --bind component:tcp://eth0:4004 \
           --bind network:tcp://eth0:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind consensus:tcp://eth0:5050 \
           --peering static \
+          --endpoint tcp://validator-1:8800 \
           --peers tcp://validator-1:8800,tcp://validator-2:8800,tcp://validator-3:8800 \
           --scheduler parallel \
           --network-auth trust
