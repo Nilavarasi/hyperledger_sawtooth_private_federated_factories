@@ -231,70 +231,70 @@ class SmallBankHandler extends TransactionHandler {
             return this.create_account(state, payload.customer_id, payload.customer_name, payload.savings_balance, payload.checking_balance, this.signer_public_key, payload.bank_name)
         } else if (payload.verb === 'deposit_money') {
             return this.deposit_money(payload.customer_id, payload.amount, state)
-            .then(resData => {
-                const insert_data = {
-                    "transaction_id": null,
-                    "customer_id": payload.customer_id,
-                    "dest_account": null,
-                    "transaction_name": "deposit",
-                    "amount": payload.checking_balance,
-                    "transaction_hash": ''
-                }
-                db_operations.insertTranasaction(insert_data)
-                .then(ins_res=>{
-                    console.log("Inserted Transaction result", ins_res)
-                    db_operations.updateUserBalance({ 'customer_id': payload.customer_id, 'amount': this.srb })
-                    .then(upd_res => {
-                        console.log("Updated User Balance Result", upd_res)
-                    })
-                })
+                .then(resData => {
+                    const insert_data = {
+                        "transaction_id": null,
+                        "customer_id": payload.customer_id,
+                        "dest_account": null,
+                        "transaction_name": "deposit",
+                        "amount": payload.checking_balance,
+                        "transaction_hash": ''
+                    }
+                    db_operations.insertTranasaction(insert_data)
+                        .then(ins_res => {
+                            console.log("Inserted Transaction result", ins_res)
+                            db_operations.updateUserBalance({ 'customer_id': payload.customer_id, 'amount': this.srb })
+                                .then(upd_res => {
+                                    console.log("Updated User Balance Result", upd_res)
+                                })
+                        })
 
-            })
+                })
         } else if (payload.verb === 'withdraw_money') {
             return this.withdraw_money(payload.customer_id, payload.amount, state)
-            .then(resData => {
-                const insert_data = {
-                    "transaction_id": null,
-                    "customer_id": payload.customer_id,
-                    "dest_account": null,
-                    "transaction_name": "withdraw",
-                    "amount": payload.amount,
-                    "transaction_hash": ''
-                }
-                db_operations.insertTranasaction(insert_data)
-                .then(ins_res=>{
-                    console.log("Inserted Transaction result", ins_res)
-                    db_operations.updateUserBalance({ 'customer_id': payload.customer_id, 'amount': this.srb })
-                    .then(upd_res => {
-                        console.log("Updated User Balance Result", upd_res)
-                    })
-                })
+                .then(resData => {
+                    const insert_data = {
+                        "transaction_id": null,
+                        "customer_id": payload.customer_id,
+                        "dest_account": null,
+                        "transaction_name": "withdraw",
+                        "amount": payload.amount,
+                        "transaction_hash": ''
+                    }
+                    db_operations.insertTranasaction(insert_data)
+                        .then(ins_res => {
+                            console.log("Inserted Transaction result", ins_res)
+                            db_operations.updateUserBalance({ 'customer_id': payload.customer_id, 'amount': this.srb })
+                                .then(upd_res => {
+                                    console.log("Updated User Balance Result", upd_res)
+                                })
+                        })
 
-            })
+                })
         } else if (payload.verb === 'transfer_money') {
             return this.transfer_money(payload.source_customer_id, payload.dest_customer_id, payload.amount, state)
-            .then(res => {
-                const insert_data = {
-                    "transaction_id": null,
-                    "customer_id": payload.source_customer_id,
-                    "dest_account": payload.dest_customer_id,
-                    "transaction_name": "transfer",
-                    "amount": payload.amount,
-                    "transaction_hash": ''
-                }
-                db_operations.insertTranasaction(insert_data)
-                    .then(trans_res => {
-                        console.log("Inserted in tranasactions table", trans_res)
-                        db_operations.updateUserBalance({ 'customer_id': payload.source_customer_id, 'amount': this.srb })
-                            .then(upd_res1 => {
-                                console.log("Updated Balance for first user", upd_res1)
-                                db_operations.updateUserBalance({ 'customer_id': payload.dest_customer_id, 'amount': this.rb })
-                                    .then(upd_res2 => {
-                                        console.log("Updated Balance for second user", upd_res2)
-                                    })
+                .then(res => {
+                    const insert_data = {
+                        "transaction_id": null,
+                        "customer_id": payload.source_customer_id,
+                        "dest_account": payload.dest_customer_id,
+                        "transaction_name": "transfer",
+                        "amount": payload.amount,
+                        "transaction_hash": ''
+                    }
+                    db_operations.insertTranasaction(insert_data)
+                        .then(trans_res => {
+                            console.log("Inserted in tranasactions table", trans_res)
+                            db_operations.updateUserBalance({ 'customer_id': payload.source_customer_id, 'amount': this.srb })
+                                .then(upd_res1 => {
+                                    console.log("Updated Balance for first user", upd_res1)
+                                    db_operations.updateUserBalance({ 'customer_id': payload.dest_customer_id, 'amount': this.rb })
+                                        .then(upd_res2 => {
+                                            console.log("Updated Balance for second user", upd_res2)
+                                        })
                                 })
-                            })
-            })
+                        })
+                })
         } else if (payload.verb === 'get_balance') {
             return this.get_balance(payload.customer_id, state)
 

@@ -101,9 +101,8 @@ class DBOperations {
         console.log({
             "customer_id": customer_id,
             "transaction_hash": transaction_hash,
-            "transaction_id": transaction_id
         })
-        if (customer_id || transaction_hash || transaction_id) {
+        if (customer_id) {
             const update_hash_query = `UPDATE transactions SET transaction_hash = ? WHERE customer_id = ? and transaction_name = ? and amount = ?`;
             return this.bank_operations.run(
                 update_hash_query, [transaction_hash, customer_id, last_transaction_name, last_amount]

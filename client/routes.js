@@ -259,7 +259,7 @@ routes = () => {
             console.log("transcation_hash", transcation_hash)
             const customer_id = data['customer_id']
             // updateTransHash(customer_id, transcation_hash).then(update_data => {
-                console.log("updated_data", update_data)
+                // console.log("updated_data", update_data)
                 let deposit_res = null;
                 db_operations.getUser(customer_id).then(data => {
                     deposit_res = data
