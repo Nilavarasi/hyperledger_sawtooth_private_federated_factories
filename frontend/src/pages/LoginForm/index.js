@@ -13,13 +13,17 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { Redirect } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {
+  queryAPI
+} from '../../Api';
+
 
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        Nila - Small Bank Hyperledger Sawtooth Application
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -41,12 +45,26 @@ export default function LoginForm() {
       password: data.get('password'),
     });
     const user_data = {
-        email: data.get('email'),
+        customer_name: data.get('email'),
         password: data.get('password'),
       }
-    localStorage.setItem('user', user_data);
-    setIsLoggedIn(true)
-    // setIsLoading(false)
+    queryAPI('/login', user_data, 'POST')
+      .then(loginRes => {
+        queryAPI('/user', {'customer_name': data.get('email')}, 'POST')
+        .then(userRes => {
+          console.log('userRes', userRes)
+          if(userRes[0].message.length > 0) {
+            console.log("userRes[0].message[0]", userRes[0].message[0])
+            localStorage.setItem('sec_user_balance', userRes[0].message[0]['balance']);
+            localStorage.setItem('sec_user_bank_name', userRes[0].message[0]['bank_name']);
+            localStorage.setItem('sec_user_customer_id', userRes[0].message[0]['customer_id']);
+            localStorage.setItem('sec_user_customer_name', userRes[0].message[0]['customer_name']);
+            localStorage.setItem('sec_user_public_key', userRes[0].message[0]['public_key']);
+            setIsLoggedIn(true)
+            // setIsLoading(false)
+          }
+        })
+      })
   };
 
   return (
@@ -107,7 +125,7 @@ export default function LoginForm() {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/register" variant="body2">
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

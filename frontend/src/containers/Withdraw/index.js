@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
@@ -8,12 +9,43 @@ import TextField from '@mui/material/TextField';
 import { CardActionArea } from '@mui/material';
 import Button from '@mui/material/Button';
 
-function Withdraw() {
+import {
+	queryAPI
+  } from '../../Api';
+
+function Withdraw({username, userID, handleBalance, setLoadingFromChild}) {
     const [amountToWithdraw, setAmountToWithdraw] = React.useState('');
 
     const handleSubmit = (event) => { 
-        event.preventDefault();
-        console.log("amountToWithdraw", amountToWithdraw)
+        event.preventDefault()
+        setLoadingFromChild(true);
+        console.log("amountToSend", amountToWithdraw)
+        const withdraw_data = {
+            "verb": "withdraw_money",
+            "amount": parseInt(amountToWithdraw),
+            "customer_name": username,
+            "customer_id": userID
+        }
+        console.log("withdraw_data", withdraw_data)
+        queryAPI('/withdraw',  withdraw_data, 'POST')
+		.then(depRes => {
+            if(depRes.length > 0) {
+                const transaction_hash = depRes[0]['transaction_hash'];
+                handleBalance()
+                const update_hash_data = {
+                    "customer_id": userID,
+                    "last_amount": parseInt(amountToWithdraw),
+                    "transaction_hash": transaction_hash,
+                    "last_transaction_name": "withdraw"
+                }
+                queryAPI('/update_hash',  update_hash_data, 'POST')
+                .then(updateDepRes => {
+                    console.log(updateDepRes)
+                    setLoadingFromChild(false);
+                    handleBalance()
+                })
+            }
+        })
     }
     return (
         <Card sx={{ maxWidth: 345 }}>
@@ -57,4 +89,12 @@ function Withdraw() {
         </Card>
     );
 }
+
+Withdraw.propTypes = {
+	username: PropTypes.string,
+    userID: PropTypes.string,
+    handleBalance: PropTypes.func,
+    setLoadingFromChild: PropTypes.func,
+}
+
 export default Withdraw;

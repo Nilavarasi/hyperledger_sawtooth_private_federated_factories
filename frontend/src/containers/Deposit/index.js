@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
+import PropTypes from 'prop-types';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Box from '@mui/material/Box';
@@ -8,12 +9,43 @@ import TextField from '@mui/material/TextField';
 import { CardActionArea } from '@mui/material';
 import Button from '@mui/material/Button';
 
-function Deposit() {
+import {
+	queryAPI
+  } from '../../Api';
+
+function Deposit({username, userID, handleBalance, setLoadingFromChild}) {
     const [amountToSend, setAmountToSend] = React.useState('');
 
     const handleSubmit = (event) => { 
         event.preventDefault()
+        setLoadingFromChild(true);
         console.log("amountToSend", amountToSend)
+        const deposit_data = {
+            "verb": "deposit_money",
+            "amount": parseInt(amountToSend),
+            "customer_name": username,
+            "customer_id": userID
+        }
+        console.log("deposit_data", deposit_data)
+        queryAPI('/deposit',  deposit_data, 'POST')
+		.then(depRes => {
+            if(depRes.length > 0) {
+                const transaction_hash = depRes[0]['transaction_hash'];
+                handleBalance()
+                const update_hash_data = {
+                    "customer_id": userID,
+                    "last_amount": parseInt(amountToSend),
+                    "transaction_hash": transaction_hash,
+                    "last_transaction_name": "deposit"
+                }
+                queryAPI('/update_hash',  update_hash_data, 'POST')
+                .then(updateDepRes => {
+                    console.log(updateDepRes)
+                    setLoadingFromChild(false);
+                    handleBalance()
+                })
+            }
+        })
     }
     return (
         <Card sx={{ maxWidth: 500 }}>
@@ -56,5 +88,12 @@ function Deposit() {
             </CardActionArea>
         </Card>
     );
+}
+
+Deposit.propTypes = {
+	username: PropTypes.string,
+    userID: PropTypes.string,
+    handleBalance: PropTypes.func,
+    setLoadingFromChild: PropTypes.func,
 }
 export default Deposit;
