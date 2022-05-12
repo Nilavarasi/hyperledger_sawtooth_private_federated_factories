@@ -90,7 +90,7 @@ class DBOperations {
     getAllUser() {
         return this.bank_operations.all(
             `SELECT * FROM customers`,
-            [id]).then(data => {
+            ).then(data => {
                 return data
             })
     }
