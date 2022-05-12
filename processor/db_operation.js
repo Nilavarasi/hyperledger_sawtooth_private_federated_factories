@@ -97,7 +97,7 @@ class DBOperations {
         const customer_id = data['customer_id'];
         const transaction_hash = data['transaction_hash'];
         const last_transaction_name = data['last_transaction_name'];
-        const last_amount = data['last_transaction_name'];
+        const last_amount = data['last_amount'];
         console.log({
             "customer_id": customer_id,
             "transaction_hash": transaction_hash,
