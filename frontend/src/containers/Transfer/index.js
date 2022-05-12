@@ -89,7 +89,7 @@ function Transfer({username, userID, handleBalance, setLoadingFromChild}) {
                     {console.log("users", users)}
 
                     <Typography gutterBottom variant="h5" component="div">
-                        From account - {'nila'}
+                        From account - {username}
                     </Typography>
                     <Box component="form" onSubmit={handleSubmit} Validate sx={{ mt: 1 }}>
                     <FormControl fullWidth>

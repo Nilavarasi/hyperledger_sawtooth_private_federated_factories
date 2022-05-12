@@ -59,7 +59,7 @@ function Withdraw({username, userID, handleBalance, setLoadingFromChild}) {
             <CardActionArea>
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div">
-                        From account - {'nila'}
+                        From account - {username}
                     </Typography>
                     <Box component="form" onSubmit={handleSubmit} Validate sx={{ mt: 1 }}>
                         <TextField
