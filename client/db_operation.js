@@ -41,7 +41,7 @@ class DBOperations {
         const customer_name = data['customer_name']
         const dest_customer_name = data['dest_customer_name']
         if (customer_id && transaction_name) {
-            const insert_transaction_query = `insert into transactions (transaction_id, customer_id, transaction_name, amount, transaction_hash, created_at, customer_name, dest_customer_name, dest_account) VALUES (?, ?, ?, ? , ?, ?, ?, ?)`;
+            const insert_transaction_query = `insert into transactions (transaction_id, customer_id, transaction_name, amount, transaction_hash, created_at, customer_name, dest_customer_name, dest_account) VALUES (?, ?, ?, ? , ?, ?, ?, ?, ?)`;
             return this.bank_operations.run(
                 insert_transaction_query,[
                     transaction_id,
