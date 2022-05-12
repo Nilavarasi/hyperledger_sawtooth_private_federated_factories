@@ -19,7 +19,6 @@ import {
 
 function Transfer({username, userID, handleBalance, setLoadingFromChild}) {
     const [toAccount, setToAccount] = React.useState('');
-    // const [toCustomerID, setToCustomer] = React.useState('');
     const [amountToSend, setAmountToSend] = React.useState('');
     const [users, setUsers] = React.useState([]);
 
@@ -32,10 +31,6 @@ function Transfer({username, userID, handleBalance, setLoadingFromChild}) {
         })
     }, [])
 
-    // const handleChange = (value) => {
-        // setToAccount(value)
-        // setToCustomer(users.filter(user => user['customer_name'] === toAccount)[0]['customer_id']);
-    // }
     const handleSubmit = (event) => { 
         event.preventDefault()
         console.log({
@@ -104,23 +99,11 @@ function Transfer({username, userID, handleBalance, setLoadingFromChild}) {
                         >
                             {
                                 users.map((user, index) => (
-                                    <MenuItem id={user['customer_name']} key={`user_index${index}`} value={user['customer_name']}>{user['customer_name']}</MenuItem>        
+                                    user['customer_name'] !== username && <MenuItem id={user['customer_name']} key={`user_index${index}`} value={user['customer_name']}>{user['customer_name']}</MenuItem>            
                                 ))
                             }
                         </Select>
                     </FormControl>
-                        {/* <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="to_acconunt"
-                            label="Receiver Account"
-                            name="to_acconunt"
-                            autoComplete="to_acconunt"
-                            value={toAccount}
-                            onChange={(e) => setToAccount(e.target.value)}
-                            autoFocus
-                        /> */}
                         <TextField
                             margin="normal"
                             required
