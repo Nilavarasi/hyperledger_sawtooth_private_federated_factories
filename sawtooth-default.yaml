@@ -2,16 +2,34 @@ version: "2.1"
 
 services:
 
-  settings-tp:
+  settings-tp1:
     image: hyperledger/sawtooth-settings-tp:1.0
-    container_name: sawtooth-settings-tp-default
+    container_name: sawtooth-settings-tp-default-1
     depends_on:
-      - validator
-    entrypoint: settings-tp -vv -C tcp://validator:4004
+      - validator-1
+    entrypoint: settings-tp -vv -C tcp://validator-1:4004
+  settings-tp2:
+    image: hyperledger/sawtooth-settings-tp:1.0
+    container_name: sawtooth-settings-tp-default-2
+    depends_on:
+      - validator-2
+    entrypoint: settings-tp -vv -C tcp://validator-2:4004
+  settings-tp3:
+    image: hyperledger/sawtooth-settings-tp:1.0
+    container_name: sawtooth-settings-tp-default-3
+    depends_on:
+      - validator-3
+    entrypoint: settings-tp -vv -C tcp://validator-3:4004
+  settings-tp4:
+    image: hyperledger/sawtooth-settings-tp:1.0
+    container_name: sawtooth-settings-tp-default-4
+    depends_on:
+      - validator-4
+    entrypoint: settings-tp -vv -C tcp://validator-4:4004
 
-  validator:
+  validator-1:
     image: hyperledger/sawtooth-validator:1.0
-    container_name: sawtooth-validator-default
+    container_name: sawtooth-validator-default-1
     expose:
       - 4004
     ports:
@@ -20,22 +38,115 @@ services:
     entrypoint: "bash -c \"\
         sawadm keygen --force  && \
         sawtooth keygen my_key --force && \
-        sawset genesis -k /root/.sawtooth/keys/my_key.priv && \
+        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
         sawadm genesis config-genesis.batch && \
         sawtooth-validator -vv \
-          --endpoint tcp://validator:8800 \
+          --endpoint tcp://validator-1:8800 \
           --bind component:tcp://eth0:4004 \
           --bind network:tcp://eth0:8800 \
+          --peering static \
+          --scheduler parallel \
+          --network-auth trust
       \""
-
-  rest-api:
+  validator-2:
+    image: hyperledger/sawtooth-validator:1.0
+    container_name: sawtooth-validator-default-2
+    expose:
+      - 4004
+    ports:
+      - "4004:4004"
+    # start the validator with an empty genesis batch
+    entrypoint: "bash -c \"\
+        sawadm keygen --force  && \
+        sawtooth keygen my_key --force && \
+        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawadm genesis config-genesis.batch && \
+        sawtooth-validator -vv \
+          --endpoint tcp://validator-2:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind network:tcp://eth0:8800 \
+          --peering static \
+          --peers tcp://validator-1:8800 \
+          --scheduler parallel \
+          --network-auth trust
+      \""
+  validator-3:
+    image: hyperledger/sawtooth-validator:1.0
+    container_name: sawtooth-validator-default-3
+    expose:
+      - 4004
+    ports:
+      - "4004:4004"
+    # start the validator with an empty genesis batch
+    entrypoint: "bash -c \"\
+        sawadm keygen --force  && \
+        sawtooth keygen my_key --force && \
+        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawadm genesis config-genesis.batch && \
+        sawtooth-validator -vv \
+          --endpoint tcp://validator-3:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind network:tcp://eth0:8800 \
+          --peering static \
+          --peers tcp://validator-1:8800,tcp://validator-2:8800 \
+          --scheduler parallel \
+          --network-auth trust
+      \""
+  validator-4:
+    image: hyperledger/sawtooth-validator:1.0
+    container_name: sawtooth-validator-default-4
+    expose:
+      - 4004
+    ports:
+      - "4004:4004"
+    # start the validator with an empty genesis batch
+    entrypoint: "bash -c \"\
+        sawadm keygen --force  && \
+        sawtooth keygen my_key --force && \
+        sawset genesis -k /root/.sawtooth/keys/validator-1/my_key.priv && \
+        sawadm genesis config-genesis.batch && \
+        sawtooth-validator -vv \
+          --endpoint tcp://validator-4:8800 \
+          --bind component:tcp://eth0:4004 \
+          --bind network:tcp://eth0:8800 \
+          --peering static \
+          --peers tcp://validator-1:8800,tcp://validator-2:8800,tcp://validator-3:8800 \
+          --scheduler parallel \
+          --network-auth trust
+      \""
+  
+  rest-api-1:
     image: hyperledger/sawtooth-rest-api:1.0
-    container_name: sawtooth-rest-api-default
+    container_name: sawtooth-rest-api-default-1
     ports:
       - "8008:8008"
     depends_on:
-      - validator
-    entrypoint: sawtooth-rest-api -C tcp://validator:4004 --bind rest-api:8008
+      - validator-1
+    entrypoint: sawtooth-rest-api -C tcp://validator-1:4004 --bind rest-api-1:8008
+  rest-api-2:
+    image: hyperledger/sawtooth-rest-api:1.0
+    container_name: sawtooth-rest-api-default-2
+    ports:
+      - "8008:8008"
+    depends_on:
+      - validator-2
+    entrypoint: sawtooth-rest-api -C tcp://validator-2:4004 --bind rest-api-2:8008
+  rest-api-3:
+    image: hyperledger/sawtooth-rest-api:1.0
+    container_name: sawtooth-rest-api-default-3
+    ports:
+      - "8008:8008"
+    depends_on:
+      - validator-3
+    entrypoint: sawtooth-rest-api -C tcp://validator-3:4004 --bind rest-api-3:8008
+  rest-api-4:
+    image: hyperledger/sawtooth-rest-api:1.0
+    container_name: sawtooth-rest-api-default-4
+    ports:
+      - "8008:8008"
+    depends_on:
+      - validator-4
+    entrypoint: sawtooth-rest-api -C tcp://validator-4:4004 --bind rest-api-4:8008
 
   shell:
     image: hyperledger/sawtooth-all:1.0
